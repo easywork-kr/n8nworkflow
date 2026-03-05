@@ -1,0 +1,2360 @@
+{
+  "name": "[Live]Reddit_VOC_Parallel2",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "product_collection_rules",
+        "returnAll": true,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "product_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -3136,
+        320
+      ],
+      "id": "8fe41553-1a1b-4d97-b158-47870978190e",
+      "name": "get_subreddit_list",
+      "retryOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "n1gePNFJ39RxfpxF",
+          "name": "LG_CNS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://oauth.reddit.com/r/{{ $json.subreddit_name }}/{{ $json.filter_sort }}.json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "t",
+              "value": "={{ $json.filter_time }}"
+            },
+            {
+              "name": "limit",
+              "value": "=100"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "LG-CNS-VOC-Bot/1.0"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node[\"When Executed by Another Workflow\"].json[\"access_token\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2816,
+        528
+      ],
+      "id": "8eb325cc-be3d-4e1b-9078-7f1a45931588",
+      "name": "Reddit api1",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data.children",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -2384,
+        528
+      ],
+      "id": "42fc2b03-b67f-42d7-8662-25f7384b1646",
+      "name": "Split Out2",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -2848,
+        320
+      ],
+      "id": "9cda6250-a8c8-452d-828d-0dc60b8ac728",
+      "name": "Loop Over Items1",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6c824f55-cd50-4c6b-a8cc-7de57d986142",
+              "leftValue": "={{ $json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "edbc6d44-0314-4473-b9d6-fb904c3d8b01",
+              "leftValue": "={{ $json.upvote_count+$json.comment_count }}",
+              "rightValue": "={{ $json.min_engagement_score }}",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1760,
+        432
+      ],
+      "id": "cd668e28-ffb5-4cd4-81b8-2c1ce88f3c17",
+      "name": "If2",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c888d8dc-e9ba-40d3-8964-a13074bb5c45",
+              "name": "keep",
+              "value": "false",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1520,
+        512
+      ],
+      "id": "0391db60-dba1-4bf0-851b-120c6b620009",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1248,
+        464
+      ],
+      "id": "d5efe44c-1def-454a-a132-282f68ec08d8",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9638611d-d5ec-4cb2-bf5d-89c519672393",
+              "leftValue": "={{ $json.keep }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1616,
+        64
+      ],
+      "id": "0b62eb39-83ce-4eab-bfa4-67b0232a366f",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "jsCode": "/***************************************************\n * Reddit VOC 키워드 필터링 (엄밀/리터럴+기호보존 버전)\n *\n * 요구사항 반영:\n * - include/exclude 모두 콤마 기준 키워드(또는 구문)로 분리\n * - 각 키워드는 제목/본문에 \"독립적으로\" 등장해야 매칭 (부분문자열 금지)\n * - 띄어쓰기 유지: \"lg tv\"는 \"lgtv\"로 잡히면 안 됨\n * - 줄바꿈은 공백으로 취급하지 않음 (키워드의 ' '는 오직 스페이스만 매칭)\n * - gallery+ 같은 기호 포함 키워드는 \"있는 그대로\" 인식\n *\n * Output:\n * - keep: \"true\" / \"false\" (string)\n * - (디버그) __kw_matched_include / __kw_matched_exclude / __kw_text_head\n ***************************************************/\n\nconst FAIL_CLOSED = true;   // include_keywords 비면 keep=false (추천)\nconst ADD_DEBUG = true;     // 디버그 필드 추가 (안정화 후 false로)\n\n// \"단어 이어붙임\"으로 취급할 커넥터 기호들\n// - gallery+pro 같은 확장 토큰을 막기 위해 '+' 포함\n// - 필요 시 더 넣을 수 있지만, 넣을수록 매칭이 더 빡세짐(= 누락 가능성 증가)\nconst CONNECTOR_SYMBOLS = \"+#_-\";\n\n/** 유니코드 property escape 지원 여부 (Node 버전에 따라) */\nlet SUPPORTS_UNICODE_PROPS = true;\ntry {\n  new RegExp(\"\\\\p{L}\", \"u\");\n} catch (e) {\n  SUPPORTS_UNICODE_PROPS = false;\n}\n\nfunction escapeRegExp(s) {\n  return String(s).replace(/[.*+?^${}()|[\\]\\\\]/g, \"\\\\$&\");\n}\n\n// char class 안에서 안전하게 쓰기 위한 escape\nfunction escapeCharClass(s) {\n  return String(s).replace(/[-\\\\\\]^]/g, \"\\\\$&\");\n}\n\n// \"이어붙임 문자\" 집합 만들기: 문자/숫자 + 커넥터기호\nconst ESC_CONN = escapeCharClass(CONNECTOR_SYMBOLS);\nconst EDGE_SET = SUPPORTS_UNICODE_PROPS\n  ? `\\\\p{L}\\\\p{N}${ESC_CONN}`\n  : `A-Za-z0-9${ESC_CONN}`;\n\n// 경계용: (시작 또는 비-이어붙임문자) + 키워드 + (끝 또는 비-이어붙임문자)\nconst LEFT_BOUND = `(?:^|[^${EDGE_SET}])`;\nconst RIGHT_BOUND = `(?:$|[^${EDGE_SET}])`;\n\n/**\n * ✅ 줄바꿈을 공백으로 치환하지 않는 정규화\n * - 스마트따옴표/전각 문자 정규화(NFKC)\n * - NBSP는 스페이스로\n * - 여러 \"스페이스\"만 하나로 축소 (줄바꿈/탭 등은 그대로 둠)\n */\nfunction normalizeKeepNewlines(s) {\n  if (s == null) return \"\";\n  return String(s)\n    .normalize(\"NFKC\")\n    .replace(/[\\u2018\\u2019]/g, \"'\")\n    .replace(/[\\u201C\\u201D]/g, '\"')\n    .replace(/\\u00A0/g, \" \")\n    .toLowerCase()\n    .replace(/[ ]+/g, \" \")   // ✅ 스페이스만 정리 (줄바꿈은 유지)\n    .trim();\n}\n\nfunction parseKeywords(raw) {\n  if (raw === null || raw === undefined) return [];\n  if (Array.isArray(raw)) {\n    return raw\n      .map(v => normalizeKeepNewlines(v))\n      .filter(k => k && k !== \"null\" && k !== \"[]\");\n  }\n  const s = String(raw).trim();\n  if (!s || s.toLowerCase() === \"null\" || s === \"[]\") return [];\n  return s\n    .split(/[,|\\n]/) // 콤마/파이프/줄바꿈\n    .map(k => normalizeKeepNewlines(k))\n    .filter(k => k && k !== \"null\" && k !== \"[]\");\n}\n\nfunction uniq(arr) { return [...new Set(arr)]; }\n\n/**\n * ✅ \"있는 그대로\" (리터럴) 키워드 정규식 생성\n * - keyword 전체를 escapeRegExp 해서 기호 포함 그대로 매칭\n * - 키워드 내부 스페이스는 그대로 ' ' 로만 매칭 (줄바꿈과 매칭 ❌)\n * - 좌/우 경계: 문자/숫자 및 커넥터 기호로 이어붙은 경우 차단\n *\n * 예)\n * - keyword: gallery+  -> /(^|[^...])gallery\\+($|[^...])/iu\n * - \"gallery++\"    => 오른쪽이 '+'라서 경계 실패 (차단)\n * - \"gallery+pro\"  => 오른쪽이 'p'라서 경계 실패 (차단)\n * - \"gallery+.\"    => '.'는 이어붙임 문자가 아니라서 통과(원하면 CONNECTOR_SYMBOLS에 '.' 추가)\n */\nfunction buildStrictKeywordRegex(keyword) {\n  const kw = normalizeKeepNewlines(keyword);\n  if (!kw) return null;\n\n  const literal = escapeRegExp(kw); // ✅ 스페이스 포함 그대로\n  return new RegExp(`${LEFT_BOUND}${literal}${RIGHT_BOUND}`, SUPPORTS_UNICODE_PROPS ? \"iu\" : \"i\");\n}\n\nconst regexCache = new Map();\nfunction getRegex(k) {\n  const key = normalizeKeepNewlines(k);\n  if (!key) return null;\n  if (regexCache.has(key)) return regexCache.get(key);\n  const re = buildStrictKeywordRegex(key);\n  regexCache.set(key, re);\n  return re;\n}\n\n/**\n * 네 데이터 구조 대응 텍스트 빌더\n * - title/body 뿐 아니라 item.data.title/selftext 등을 포함\n * - url/domain/permalink 포함(원치 않으면 여기서 제거 가능)\n */\nfunction buildPostText(p) {\n  const d = p.data ?? {};\n  const parts = [\n    p.title, p.body, p.selftext, p.text,\n    d.title, d.selftext, d.body,\n    d.url, d.url_overridden_by_dest, d.domain,\n    d.permalink,\n  ]\n    .filter(v => v !== null && v !== undefined)\n    .map(v => String(v));\n\n  // ✅ 줄바꿈 유지 정규화 (여러 스페이스만 축소)\n  return normalizeKeepNewlines(parts.join(\" \"));\n}\n\nconst out = [];\n\nfor (const item of $input.all()) {\n  const p = { ...item.json };\n\n  const includeKeywords = uniq(parseKeywords(p.include_keywords));\n  const excludeKeywords = uniq(parseKeywords(p.exclude_keywords));\n\n  const text = buildPostText(p);\n\n  // 1) include: 하나라도 매칭되면 통과\n  let pass;\n  if (includeKeywords.length === 0) {\n    pass = FAIL_CLOSED ? false : true;\n  } else {\n    pass = includeKeywords.some(k => {\n      const re = getRegex(k);\n      return re ? re.test(text) : false;\n    });\n  }\n\n  // 2) exclude: 하나라도 매칭되면 탈락\n  const matchedExclude = [];\n  if (pass && excludeKeywords.length > 0) {\n    for (const k of excludeKeywords) {\n      const re = getRegex(k);\n      if (re && re.test(text)) matchedExclude.push(k);\n    }\n    if (matchedExclude.length > 0) pass = false;\n  }\n\n  p.keep = pass ? \"true\" : \"false\";\n\n  if (ADD_DEBUG) {\n    const matchedInclude = includeKeywords.filter(k => {\n      const re = getRegex(k);\n      return re ? re.test(text) : false;\n    });\n\n    p.__kw_matched_include = matchedInclude;\n    p.__kw_matched_exclude = matchedExclude;\n    p.__kw_include_len = includeKeywords.length;\n    p.__kw_exclude_len = excludeKeywords.length;\n    p.__kw_text_head = text.slice(0, 240);\n    p.__kw_unicode_props = SUPPORTS_UNICODE_PROPS ? \"true\" : \"false\";\n    p.__kw_edge_symbols = CONNECTOR_SYMBOLS;\n  }\n\n  out.push({ json: p });\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1520,
+        384
+      ],
+      "id": "46d1886f-b5f7-495d-9a79-198cf11066ae",
+      "name": "키워드 필터링"
+    },
+    {
+      "parameters": {
+        "resource": "postComment",
+        "operation": "getAll",
+        "subreddit": "={{ $json.subreddit }}",
+        "postId": "={{ $json.reddit_post_id }}",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.reddit",
+      "typeVersion": 1,
+      "position": [
+        -784,
+        -176
+      ],
+      "id": "174609ac-d3bf-4fb2-a848-dd1b6dbea1a8",
+      "name": "Get many comments in a post1",
+      "retryOnFail": true,
+      "alwaysOutputData": true,
+      "waitBetweenTries": 5000,
+      "maxTries": 5,
+      "credentials": {
+        "redditOAuth2Api": {
+          "id": "A5wPGz2woCzECHKf",
+          "name": "LG CNS측 reddit"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/************************************************************\n * 댓글1차필터링1 (batch N 지원 버전)\n * - Loop Over Items3의 \"현재 배치 N개 포스트\"를 가져와서\n * - 입력으로 들어온 댓글(평탄화)을 link_id(또는 parent_id) 기준으로 post별로 묶고\n * - 포스트 1개당 1 item 출력 (댓글 없으면 comments_tree: [])\n ************************************************************/\n\nconst LOOP_NODE = \"Loop Over Items3\";\n\n// ✅ 현재 배치 포스트들 가져오기 (가장 흔하게 동작하는 방식들 다 시도)\nfunction getLoopPosts() {\n  // 1) $items(LOOP_NODE)\n  try {\n    const arr = $items(LOOP_NODE);\n    if (Array.isArray(arr) && arr.length) return arr.map(x => x.json);\n  } catch (e) {}\n\n  // 2) $('node').all() 형태 (n8n 버전에 따라 지원)\n  try {\n    const arr = $(LOOP_NODE).all();\n    if (Array.isArray(arr) && arr.length) return arr.map(x => x.json);\n  } catch (e) {}\n\n  return [];\n}\n\nconst posts = getLoopPosts();                // ✅ 배치의 포스트 N개\nconst comments = $input.all().map(i => i.json); // ✅ 평탄화 댓글들\n\nfunction normalizeText(v) {\n  if (v === null || v === undefined) return \"\";\n  return String(v).replace(/\\s+/g, \" \").trim();\n}\nfunction normalizePostId(v) {\n  const s = normalizeText(v);\n  if (!s) return \"\";\n  return s.replace(/^t3_/, \"\");\n}\nfunction getPostId(obj) {\n  return normalizePostId(\n    obj.reddit_post_id ??\n    obj.post_id ??\n    obj.post_ID ??\n    obj.postId ??\n    obj.link_id ??\n    obj.t3_id ??\n    obj.id ??\n    obj.name ??\n    \"\"\n  );\n}\n\n// ✅ 댓글 item에서 “이 댓글이 속한 포스트 id” 뽑기\nfunction getPostIdFromComment(j) {\n  // 네 샘플(json.json) 기준: link_id / parent_id 가 t3_xxx 형태로 들어옴\n  return normalizePostId(\n    j.link_id ??\n    j.parent_id ??\n    j.reddit_post_id ??\n    j.post_id ??\n    j.postId ??\n    j.post_ID ??\n    \"\"\n  );\n}\n\nfunction isTopLevel(j) {\n  // depth가 있으면 depth==0\n  if (j.depth !== undefined && j.depth !== null && j.depth !== \"\") {\n    return Number(j.depth) === 0;\n  }\n  // parent_id == link_id이면 top-level\n  if (j.parent_id && j.link_id) return String(j.parent_id) === String(j.link_id);\n  return true;\n}\n\nfunction simplifyComment(node) {\n  if (!node || typeof node !== \"object\") return null;\n\n  // reddit \"more\" 타입 방어\n  if (node.kind === \"more\") return null;\n\n  const data = node.data || node;\n  if (data.kind === \"more\") return null;\n\n  const author = data.author;\n  const body = data.body;\n  if (!author || !body || String(body).trim() === \"\") return null;\n\n  const simplified = {\n    author,\n    body,\n    subreddit_id: data.subreddit_id,\n    replies: [],\n  };\n\n  const replies = data.replies;\n  if (!replies || replies === \"\") return simplified;\n\n  // Listing 형태\n  if (typeof replies === \"object\" && replies.data && Array.isArray(replies.data.children)) {\n    for (const child of replies.data.children) {\n      const childSimplified = simplifyComment(child);\n      if (childSimplified) simplified.replies.push(childSimplified);\n    }\n  }\n\n  // 배열 형태\n  if (Array.isArray(replies)) {\n    for (const child of replies) {\n      const childSimplified = simplifyComment(child);\n      if (childSimplified) simplified.replies.push(childSimplified);\n    }\n  }\n\n  return simplified;\n}\n\n// --------------------------------------------------\n// 1) 댓글을 post_id별로 그룹핑\n// --------------------------------------------------\nconst commentGroup = new Map(); // pid -> comment[]\nfor (const c of comments) {\n  const pid = getPostIdFromComment(c);\n  if (!pid) continue;\n  if (!commentGroup.has(pid)) commentGroup.set(pid, []);\n  commentGroup.get(pid).push(c);\n}\n\n// --------------------------------------------------\n// 2) 포스트 N개 각각에 대해 comments_tree 생성 → N개 item 출력\n// --------------------------------------------------\n\n// ⚠️ 만약 posts를 못 가져오면(0개) 최소한 댓글에 등장한 post들만이라도 출력\nif (!posts.length) {\n  const pids = Array.from(commentGroup.keys());\n  return pids.map(pid => {\n    const group = commentGroup.get(pid) || [];\n\n    const seen = new Set();\n    const roots = [];\n    for (const j of group) {\n      if (!isTopLevel(j)) continue;\n      const cid = j.id ? String(j.id) : null;\n      if (cid && seen.has(cid)) continue;\n      if (cid) seen.add(cid);\n      roots.push(j);\n    }\n\n    const commentsTree = [];\n    for (const root of roots) {\n      const simplified = simplifyComment(root);\n      if (simplified) commentsTree.push(simplified);\n    }\n\n    return {\n      json: {\n        post_id: pid,\n        reddit_post_id: pid,\n        top_level_count: commentsTree.length,\n        comments_tree: commentsTree,\n        comments_tree_json: JSON.stringify(commentsTree),\n        _warn: \"posts(batch)를 LOOP_NODE에서 못 가져와서, 댓글에 등장한 post_id만 출력했음. (posts까지 반드시 필요하면 Merge로 posts를 같이 넣는 구성이 가장 안전)\",\n      },\n    };\n  });\n}\n\n// ✅ 정상 케이스: 배치의 posts(N개) 기준으로, 댓글 없어도 포스트 1개는 유지\nreturn posts.map((post, idx) => {\n  const pid = getPostId(post) || \"\";\n  const group = pid ? (commentGroup.get(pid) || []) : [];\n\n  const seen = new Set();\n  const roots = [];\n  for (const j of group) {\n    if (!isTopLevel(j)) continue;\n\n    const cid = j.id ? String(j.id) : null;\n    if (cid && seen.has(cid)) continue;\n    if (cid) seen.add(cid);\n\n    roots.push(j);\n  }\n\n  const commentsTree = [];\n  for (const root of roots) {\n    const simplified = simplifyComment(root);\n    if (simplified) commentsTree.push(simplified);\n  }\n\n  return {\n    json: {\n      ...post,\n      post_id: pid,\n      reddit_post_id: pid,\n      top_level_count: commentsTree.length,\n      comments_tree: commentsTree,\n      comments_tree_json: JSON.stringify(commentsTree),\n    },\n    // (선택) 포스트 item과 pairing 유지하고 싶으면 켜두기\n    pairedItem: { item: idx },\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        -176
+      ],
+      "id": "892df812-8432-46d1-90b9-86d4cb29d857",
+      "name": "댓글1차필터링1",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a9b6c532-cfad-4244-9239-d11cf5a6ed48",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "1148f58b-f5ba-4cc2-ae08-fb56d245e31e",
+              "name": "author",
+              "value": "={{ $json.author }}",
+              "type": "string"
+            },
+            {
+              "id": "b95a86d9-5396-422a-be0f-563d8d9948d7",
+              "name": "body",
+              "value": "={{ $json.body }}",
+              "type": "string"
+            },
+            {
+              "id": "a268ea92-1f1f-45c8-9271-20b87b8aa334",
+              "name": "subreddit_id",
+              "value": "={{ $json.subreddit_id }}",
+              "type": "string"
+            },
+            {
+              "id": "332debb7-ed44-42d1-b942-4ac26ee5f3cf",
+              "name": "replies",
+              "value": "={{ $json.replies }}",
+              "type": "object"
+            },
+            {
+              "id": "c6504eed-7729-4d05-ba15-cd5cd9cb0c3f",
+              "name": "depth",
+              "value": "={{ $json.depth }}",
+              "type": "string"
+            },
+            {
+              "id": "28bea3b5-adbe-435b-afd9-bca741e46f75",
+              "name": "parent_id",
+              "value": "={{ $json.parent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "198d159e-ef2f-4685-9d6a-2442fa9502c2",
+              "name": "link_id",
+              "value": "={{ $json.link_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "ignoreConversionErrors": true
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -592,
+        -176
+      ],
+      "id": "86ad6988-8f67-497a-bd34-d4ac705ebfc8",
+      "name": "Edit Fields3",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "tableId": "voc_posts",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "product_id",
+              "fieldValue": "={{ $('Loop Over Items').item.json.product_id }}"
+            },
+            {
+              "fieldId": "created_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            },
+            {
+              "fieldId": "reddit_post_id",
+              "fieldValue": "={{ $('Loop Over Items').item.json.reddit_post_id }}"
+            },
+            {
+              "fieldId": "subreddit",
+              "fieldValue": "={{ $('Loop Over Items').item.json.subreddit }}"
+            },
+            {
+              "fieldId": "post_created_at",
+              "fieldValue": "={{ $('Loop Over Items').item.json.post_created_at }}"
+            },
+            {
+              "fieldId": "title",
+              "fieldValue": "={{ $('Loop Over Items').item.json.title }}"
+            },
+            {
+              "fieldId": "body",
+              "fieldValue": "={{ $('Loop Over Items').item.json.body }}"
+            },
+            {
+              "fieldId": "author",
+              "fieldValue": "={{ $('Loop Over Items').item.json.author }}"
+            },
+            {
+              "fieldId": "post_link",
+              "fieldValue": "={{ $('Loop Over Items').item.json.post_link }}"
+            },
+            {
+              "fieldId": "image_urls",
+              "fieldValue": "={{\n(() => {\n  const v =\n    $('Loop Over Items').item.json.image_urls ??\n    $('Loop Over Items').item.json.image_url ??\n    null;\n\n  if (v == null) return [];\n\n  const arr = Array.isArray(v) ? v : [v];\n\n  return arr\n    .map(x => {\n      if (x == null) return '';\n      // 문자열이면 trim + &amp; 정리(원하면 제거 가능)\n      return String(x).replace(/&amp;/g, '&').trim();\n    })\n    .filter(x => x !== ''); // ✅ '\\n', '   ' 전부 제거됨\n})()\n}}"
+            },
+            {
+              "fieldId": "upvote_ratio",
+              "fieldValue": "={{ $('Loop Over Items').item.json.upvote_ratio }}"
+            },
+            {
+              "fieldId": "upvote_count",
+              "fieldValue": "={{ $('Loop Over Items').item.json.upvote_count }}"
+            },
+            {
+              "fieldId": "comment_count",
+              "fieldValue": "={{ $('Loop Over Items').item.json.comment_count }}"
+            },
+            {
+              "fieldId": "engagement_score",
+              "fieldValue": "={{ $('Loop Over Items').item.json.engagement_score }}"
+            },
+            {
+              "fieldId": "category_id",
+              "fieldValue": "={{ $json.category_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        576
+      ],
+      "id": "d48791c4-1397-47ce-98d1-d5ff2f7892c0",
+      "name": "Create a row",
+      "retryOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "n1gePNFJ39RxfpxF",
+          "name": "LG_CNS"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "/************************************************************\n * Code 노드 B (수정 버전)\n * (포스트 단위 item: reddit_post_id + comments_tree + (메타))\n *           + (원본 메타: SOURCE_NODE_NAME 노드)\n *        → LLMPostData 생성 (출력 양식 동일)\n ************************************************************/\n\nconst SOURCE_NODE_NAME = \"step1_final\"; // ✅ 너 환경에 맞게(예: \"if1\")로 변경 가능\n\nfunction normalizeText(v) {\n  if (v === null || v === undefined) return \"\";\n  return String(v).replace(/\\s+/g, \" \").trim();\n}\n\nfunction normalizePostId(v) {\n  const s = normalizeText(v);\n  if (!s) return \"\";\n  return s.replace(/^t3_/, \"\");\n}\n\nfunction getPostId(obj) {\n  // ✅ reddit_post_id가 핵심인데, 혹시 다른 필드명/형태도 대비\n  return normalizePostId(\n    obj.reddit_post_id ??\n    obj.post_id ??\n    obj.post_ID ??\n    obj.postId ??\n    obj.link_id ??\n    obj.t3_id ??\n    obj.id ??\n    obj.name ??\n    \"\"\n  );\n}\n\n// --------------------------------------------------\n// 1) SOURCE_NODE_NAME 노드에서 원본 메타 맵 만들기\n// --------------------------------------------------\nconst sourceItems = $items(SOURCE_NODE_NAME) || [];\nconst sourceMap = new Map();\n\nfor (const it of sourceItems) {\n  const j = it.json;\n\n  const pid = getPostId(j);\n  if (!pid) continue;\n\n  const metaCommentCount =\n    j.comment_count ??\n    j.comments_count ??\n    j.num_comments ??\n    j.num_comment ??\n    \"\";\n\n  const metaScore =\n    j.engagement_score ??\n    j.score ??\n    \"\";\n\n  sourceMap.set(pid, {\n    title: normalizeText(j.title),\n    body: normalizeText(j.body),\n    subreddit: normalizeText(j.subreddit),\n    score: metaScore,\n    comments_count_meta: metaCommentCount,\n    product_id: j.product_id ?? j.productId ?? \"\",\n  });\n}\n\n// --------------------------------------------------\n// 2) comments_tree → flatten → threads_text\n// --------------------------------------------------\nfunction flattenCommentsTree(tree, postId) {\n  const out = [];\n  let seq = 0;\n\n  function walk(nodes, parentId, depth) {\n    if (!Array.isArray(nodes)) return;\n\n    for (const node of nodes) {\n      const text = normalizeText(node?.body);\n      if (!text) continue;\n\n      seq += 1;\n      const id = `${postId}-c${seq}`;\n      out.push({ id, reply_to: parentId || null, depth, text });\n\n      const replies = node?.replies;\n      if (Array.isArray(replies) && replies.length > 0) {\n        walk(replies, id, depth + 1);\n      }\n    }\n  }\n\n  walk(tree, null, 0);\n  return out;\n}\n\nfunction buildThreadsText(comments) {\n  const children = new Map();\n\n  for (const c of comments) {\n    const parent = c.reply_to || \"__root__\";\n    if (!children.has(parent)) children.set(parent, []);\n    children.get(parent).push(c);\n  }\n\n  const roots = children.get(\"__root__\") || [];\n\n  function render(node, indent) {\n    const pad = \"  \".repeat(indent);\n    let s = `${pad}- ${node.text}`;\n    const kids = children.get(node.id) || [];\n    for (const k of kids) s += `\\n${render(k, indent + 1)}`;\n    return s;\n  }\n\n  let t = 0;\n  const blocks = [];\n\n  for (const r of roots) {\n    t += 1;\n    const kids = children.get(r.id) || [];\n    const block =\n      `Thread t${t} (root): ${r.text}` +\n      (kids.length ? \"\\n\" + kids.map(k => render(k, 1)).join(\"\\n\") : \"\");\n    blocks.push(block);\n  }\n\n  return blocks.join(\"\\n\\n\");\n}\n\n// --------------------------------------------------\n// 3) 최종 LLMPostData 생성 (출력 양식 유지)\n// --------------------------------------------------\nconst items = $input.all();\n\nreturn items.map((item) => {\n  // ✅ 여기 핵심: postId를 item.json에서도 getPostId로 뽑는다\n  const postId = getPostId(item.json);\n\n  // sourceMap 우선, 없으면 item.json 메타로 fallback\n  const src = sourceMap.get(postId) || {};\n\n  const title = normalizeText(src.title || item.json.title);\n  const body = normalizeText(src.body || item.json.body);\n  const subreddit = normalizeText(src.subreddit || item.json.subreddit);\n\n  const product_id = src.product_id || item.json.product_id || item.json.productId || \"\";\n  const score = src.score ?? item.json.engagement_score ?? item.json.score ?? \"\";\n  const comments_count =\n    src.comments_count_meta ??\n    item.json.comment_count ??\n    item.json.comments_count ??\n    item.json.num_comments ??\n    \"\";\n\n  // comments_tree가 string(JSON)로 들어오는 케이스도 방어\n  let tree = item.json.comments_tree ?? item.json.commentsTree ?? [];\n  if (typeof tree === \"string\") {\n    try { tree = JSON.parse(tree); } catch (e) { tree = []; }\n  }\n  if (!Array.isArray(tree)) tree = [];\n\n  const flat = flattenCommentsTree(tree, postId || \"unknown\");\n  const threadsText = buildThreadsText(flat);\n\n  return {\n    json: {\n      LLMPostData: {\n        post_id: postId,                 // ✅ 이제 empty 안 됨\n        product_id,\n        subreddit,\n        title,\n        body,\n        score,\n        comments_count,\n        comment_threads_text: threadsText,\n        analysis_mode_hint: flat.length === 0 ? \"TITLE_BODY_ONLY\" : \"TITLE_BODY_PRIMARY\",\n      },\n    },\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        -304
+      ],
+      "id": "0388732a-3075-4ede-82c1-0cae6455b767",
+      "name": "LLM용 DATA필터링1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "LLMPostData"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        176,
+        -304
+      ],
+      "id": "d7ddefcf-5591-4606-a131-5125a35102ef",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "11367717-1ccd-4b47-94f7-92eccd0b28ec",
+              "name": "product_id",
+              "value": "={{ $json.product_id }}",
+              "type": "string"
+            },
+            {
+              "id": "c9d28b8d-b988-4a66-9b3f-a2ea2bf03d6d",
+              "name": "reddit_post_id",
+              "value": "={{ $json.reddit_post_id }}",
+              "type": "string"
+            },
+            {
+              "id": "6844da88-df45-4adf-95fe-e3bbb63ad1e0",
+              "name": "subreddit",
+              "value": "={{ $json.subreddit }}",
+              "type": "string"
+            },
+            {
+              "id": "24f5415d-cc26-4125-a0f7-7e14f2196c36",
+              "name": "post_created_at",
+              "value": "={{ $json.post_created_at }}",
+              "type": "string"
+            },
+            {
+              "id": "aa0b4bbd-a3be-470d-a1ad-f9d9e70352fe",
+              "name": "title",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "5cff41e1-ad4d-4a22-8404-0215aed2a6d5",
+              "name": "body",
+              "value": "={{ $json.body }}",
+              "type": "string"
+            },
+            {
+              "id": "f1b538c7-14d3-4ef6-9620-7c0dc406bebc",
+              "name": "author",
+              "value": "={{ $json.author }}",
+              "type": "string"
+            },
+            {
+              "id": "01742b58-61df-408b-8589-c174e82c4ecf",
+              "name": "post_link",
+              "value": "={{ $json.post_link }}",
+              "type": "string"
+            },
+            {
+              "id": "5c071291-0893-4f08-b929-15286220ad5d",
+              "name": "image_urls",
+              "value": "={{ $json.image_urls }}",
+              "type": "string"
+            },
+            {
+              "id": "4fa177ef-b57f-4768-b463-e8102052215c",
+              "name": "upvote_ratio",
+              "value": "={{ $json.upvote_ratio }}",
+              "type": "number"
+            },
+            {
+              "id": "96fa2bc0-abb8-4cbf-8d00-490c70a20e44",
+              "name": "upvote_count",
+              "value": "={{ $json.upvote_count }}",
+              "type": "number"
+            },
+            {
+              "id": "8dc871ec-221e-4eb8-832e-f8702a5fc278",
+              "name": "comment_count",
+              "value": "={{ $json.comment_count }}",
+              "type": "number"
+            },
+            {
+              "id": "57ad88f4-3a14-4aa2-8f71-0f083d5542da",
+              "name": "engagement_score",
+              "value": "={{ $json.engagement_score }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1392,
+        64
+      ],
+      "id": "ae1b251c-dd11-4c7d-9aa1-f6d75a2c978d",
+      "name": "step1_final"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "insight_types",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -784,
+        112
+      ],
+      "id": "bf0cad40-8231-49cb-ae9e-bd7924fe484e",
+      "name": "Get_insight_types",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "n1gePNFJ39RxfpxF",
+          "name": "LG_CNS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "sentiment_definitions",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -608,
+        288
+      ],
+      "id": "bff90dc0-c4ee-4294-87a9-5ff267562a4b",
+      "name": "Get_sentiment_definitions",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "n1gePNFJ39RxfpxF",
+          "name": "LG_CNS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2a6cdee1-8679-45f4-b70c-6714ce9c9dec",
+              "name": "=data",
+              "value": "={{ $json.LLMPostData }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        544,
+        112
+      ],
+      "id": "a269bcff-8101-4258-9d44-0e770fc84643",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        688,
+        112
+      ],
+      "id": "00bc64f3-9c02-48ab-bfc6-9db30d70d98a",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        400,
+        96
+      ],
+      "id": "c20e63e8-f434-4941-b905-a381bf4f9b9e",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * n8n Code Node (UPDATED for new DB outputs)\n * 목적: Get_insight_types + Get_product_insight_weights → rules_json 생성\n *\n * ✅ 출력 포맷 유지:\n * - rules_json: { task, allowed_insight_types, labels, weights_by_type }\n * - rules_json_text: JSON.stringify(rules_json)\n * - posts 있으면 post마다 rules_json/rules_json_text 부착\n * - posts 없으면 brandRuleData로 단일 출력\n */\n\nconst INSIGHT_TYPES_NODE = \"Get_insight_types\";\nconst WEIGHTS_NODE = \"Get_product_insight_weights\";\n\n// -------------------- 유틸 --------------------\nfunction toStr(v) {\n  if (v === null || v === undefined) return \"\";\n  return String(v).trim();\n}\n\n// keywords: 콤마 + \" / \" 같은 구분도 같이 잘라서 최대한 토큰화\nfunction normalizeKeywords(s) {\n  if (!s || typeof s !== \"string\") return [];\n  const raw = s\n    .split(\",\")\n    .map(x => x.trim())\n    .filter(Boolean)\n    .flatMap(token => token.split(/\\s*\\/\\s*/g).map(t => t.trim()).filter(Boolean));\n\n  // 중복 제거(대소문자 구분은 유지)\n  return raw.filter((v, i, arr) => arr.indexOf(v) === i);\n}\n\n// criteria: \"\\n\" 또는 \" / \" 구분을 리스트로 변환\nfunction criteriaToList(criteriaStr = \"\") {\n  if (!criteriaStr || typeof criteriaStr !== \"string\") return [];\n  return criteriaStr\n    .split(\"\\n\")\n    .map(line => line.trim())\n    .filter(Boolean)\n    .flatMap(line => line.split(/\\s*\\/\\s*/g).map(x => x.trim()).filter(Boolean));\n}\n\nfunction parseWeight(v) {\n  if (v === null || v === undefined || String(v).trim() === \"\") return 1;\n  const n = Number(String(v).trim());\n  return Number.isFinite(n) ? n : 1;\n}\n\nfunction safeItems(nodeName) {\n  try {\n    const arr = $items(nodeName);\n    return Array.isArray(arr) ? arr.map(x => x.json) : [];\n  } catch (e) {\n    return [];\n  }\n}\n\n// -------------------- 입력 로딩 (노드별로 정확히 분리) --------------------\nconst insightTypeRows = safeItems(INSIGHT_TYPES_NODE);\nconst weightRows = safeItems(WEIGHTS_NODE);\n\n// 노드명 꼬였을 때 대비(최후 fallback): input stream에서라도 추출\nconst inputAll = $input.all().map(i => i.json);\n\nfunction looksLikeInsightTypeRow(o) {\n  return o && (o.type_name || o.definition || o.judgment_criteria || o.keywords) && (o.id !== undefined);\n}\nfunction looksLikeWeightRow(o) {\n  return o && (o.insight_type_id !== undefined) && (o.weight_score !== undefined);\n}\n\nconst finalInsightRows =\n  insightTypeRows.length > 0\n    ? insightTypeRows\n    : inputAll.filter(looksLikeInsightTypeRow);\n\nconst finalWeightRows =\n  weightRows.length > 0\n    ? weightRows\n    : inputAll.filter(looksLikeWeightRow);\n\nif (!finalInsightRows || finalInsightRows.length === 0) {\n  return [{ json: { error: `No insight type rows found. Check node name: ${INSIGHT_TYPES_NODE}` } }];\n}\n\n// -------------------- 1) Insight Types → labels 기본 구성 --------------------\n// 너가 준 데이터는 id 순서가 뒤죽박죽이라, 안정적으로 id 오름차순 정렬\nconst sortedInsight = [...finalInsightRows].sort((a, b) => Number(a.id) - Number(b.id));\n\n/**\n * labels[*] 스키마는 기존 기대값( label_ko, definition, criteria, keywords, weight ) 유지\n * - id: type_name (사람 readable, LLM friendly)\n * - label_ko: 기존 키 유지 위해 type_name 넣음 (실제 한국어 라벨 컬럼 생기면 여기만 바꾸면 됨)\n */\nconst labelsBase = sortedInsight\n  .map(r => {\n    const typeIdNum = r.id; // 숫자\n    const typeName = toStr(r.type_name); // 문자열\n\n    const id = typeName || `Type_${typeIdNum}`;\n\n    return {\n      _type_id_num: Number(typeIdNum), // 내부 조인용(나중에 제거)\n      id,                               // ✅ LLM 선택용 ID\n      label_ko: id,                     // ✅ 기존 포맷 유지 (지금은 영문이지만 키는 유지)\n      definition: toStr(r.definition),\n      criteria: criteriaToList(toStr(r.judgment_criteria)),\n      keywords: normalizeKeywords(toStr(r.keywords)),\n      weight: 1,                        // 일단 기본값\n    };\n  })\n  .filter(l => l.id !== \"Unknown\");\n\n// numeric id → type_name(id) 매핑\nconst typeIdNumToName = {};\nfor (const l of labelsBase) typeIdNumToName[l._type_id_num] = l.id;\n\n// -------------------- 2) Weights → weights_by_type 구성 --------------------\nconst weightsByType = {};\n// 기본 1 세팅\nfor (const l of labelsBase) weightsByType[l.id] = 1;\n\n// 제품별 weightRows가 들어왔다고 가정(현재 네 예시는 단일 product_id)\nfor (const r of finalWeightRows) {\n  const typeIdNum = Number(r.insight_type_id);\n  const w = parseWeight(r.weight_score);\n  const typeName = typeIdNumToName[typeIdNum];\n\n  // insight_types에 존재하는 타입만 반영(유효성 안전)\n  if (typeName && Object.prototype.hasOwnProperty.call(weightsByType, typeName)) {\n    weightsByType[typeName] = w;\n  }\n}\n\n// labels에 최종 weight 주입 + 내부 조인용 필드 제거\nconst labels = labelsBase.map(l => {\n  const { _type_id_num, ...rest } = l;\n  return {\n    ...rest,\n    weight: weightsByType[rest.id] ?? 1\n  };\n});\n\nconst allowed = labels.map(l => l.id);\n\nconst rulesJson = {\n  task: \"classify_reddit_post_for_brand_insight\",\n  allowed_insight_types: allowed,\n  labels,\n  weights_by_type: weightsByType\n};\n\nconst rulesJsonText = JSON.stringify(rulesJson);\n\n// -------------------- posts 처리 (기존 동작 유지) --------------------\nlet posts = null;\n\n// item.json.posts 형태 지원\nfor (const it of inputAll) {\n  if (Array.isArray(it.posts) && it.posts.length > 0) {\n    posts = it.posts;\n    break;\n  }\n}\n\nif (posts) {\n  return posts.map(p => ({\n    json: {\n      ...p,\n      rules_json: rulesJson,\n      rules_json_text: rulesJsonText\n    }\n  }));\n}\n\n// rules만 출력\nreturn [\n  {\n    json: {\n      brandRuleData: {\n        rules_json: rulesJson,\n        rules_json_text: rulesJsonText\n      }\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -208,
+        112
+      ],
+      "id": "d44ea87a-ac5a-42ee-98fe-72a87b242230",
+      "name": "AMD_Brand_DATA.LLM",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * n8n Code Node\n * 목적: Sentiment Rules rows → LLM 전달용 rules_json 생성\n *\n * ✅ 출력 포맷 유지\n * - sentiment_rules: { [SentimentType]: { definition, criteria[], keywords[], patterns[], implicit_expressions[] } }\n * - sentiment_rules_text: 텍스트 규칙\n * - debug: input_items_count, sentiment_types\n */\n\n// n8n 안전 입력 처리: items[] 형태로 통일\nconst items = $input.all();\n\n// -------------------- helpers --------------------\nfunction uniq(arr) {\n  const out = [];\n  const seen = new Set();\n  for (const v of arr) {\n    const s = (v ?? \"\").toString().trim();\n    if (!s) continue;\n    if (seen.has(s)) continue;\n    seen.add(s);\n    out.push(s);\n  }\n  return out;\n}\n\nfunction splitByNewline(s) {\n  if (!s || typeof s !== \"string\") return [];\n  return uniq(\n    s\n      .split(/\\r?\\n/g)\n      .map(x => x.trim())\n      .filter(Boolean)\n  );\n}\n\nfunction splitByCommaOrNewline(s) {\n  if (!s || typeof s !== \"string\") return [];\n  // 스마트따옴표/일반따옴표 제거(패턴 문자열에 붙어있는 경우가 많아서)\n  const cleaned = s.replace(/[“”‘’\"]/g, \"\");\n  return uniq(\n    cleaned\n      .split(/,|\\r?\\n/g)\n      .map(x => x.trim())\n      .filter(Boolean)\n  );\n}\n\nfunction getType(row) {\n  return String(row?.[\"Sentiment Type\"] ?? row?.sentiment_type ?? row?.type ?? \"\").trim();\n}\n\nfunction getDefinition(row) {\n  return String(row?.[\"정의\"] ?? row?.definition ?? \"\").trim();\n}\n\nfunction getCriteriaRaw(row) {\n  return String(row?.[\"판단 기준\"] ?? row?.judgment_criteria ?? \"\").trim();\n}\n\nfunction getKeywordsRaw(row) {\n  return String(row?.[\"키워드\"] ?? row?.keywords ?? \"\").trim();\n}\n\nfunction getPatternsRaw(row) {\n  return String(row?.[\"구문/패턴\"] ?? row?.syntax_patterns ?? \"\").trim();\n}\n\nfunction getImplicitRaw(row) {\n  return String(row?.[\"우회적 표현\"] ?? row?.indirect_expressions ?? \"\").trim();\n}\n\nfunction looksLikeRuleRow(obj) {\n  if (!obj || typeof obj !== \"object\") return false;\n  // 구버전/신버전 둘 다 탐지\n  return Boolean(\n    obj[\"Sentiment Type\"] ||\n    obj.sentiment_type ||\n    obj.type ||\n    obj[\"정의\"] ||\n    obj.definition ||\n    obj[\"판단 기준\"] ||\n    obj.judgment_criteria ||\n    obj[\"키워드\"] ||\n    obj.keywords ||\n    obj[\"구문/패턴\"] ||\n    obj.syntax_patterns ||\n    obj[\"우회적 표현\"] ||\n    obj.indirect_expressions\n  );\n}\n\n// -------------------- 1) 입력에서 rows 배열 꺼내기 --------------------\nlet inputItems = [];\n\n// 케이스A: 여러 item이 각각 rule 1개씩 들고 오는 경우 (Supabase getAll 등)\nif (items.length > 0 && items.every(it => looksLikeRuleRow(it.json))) {\n  inputItems = items.map(it => it.json);\n} else {\n  // 케이스B: 첫 item.json 자체가 배열인 경우\n  const firstJson = items[0]?.json;\n\n  if (Array.isArray(firstJson) && firstJson.length && looksLikeRuleRow(firstJson[0])) {\n    inputItems = firstJson;\n  }\n  // 케이스C: firstJson.rules 같은 키에 배열이 있는 경우\n  else if (firstJson && Array.isArray(firstJson.rules) && firstJson.rules.length && looksLikeRuleRow(firstJson.rules[0])) {\n    inputItems = firstJson.rules;\n  }\n  // 케이스D: firstJson 안에 \"문자열 JSON\" 으로 배열이 들어있는 경우\n  else if (firstJson && typeof firstJson === \"string\") {\n    try {\n      const parsed = JSON.parse(firstJson);\n      if (Array.isArray(parsed) && parsed.length && looksLikeRuleRow(parsed[0])) inputItems = parsed;\n    } catch (e) {}\n  }\n  // 케이스E: firstJson 안에 어떤 키에든 배열이 있는 경우(혹시 몰라서)\n  else if (firstJson && typeof firstJson === \"object\") {\n    const maybeArr = Object.values(firstJson).find(v => Array.isArray(v) && v.length && looksLikeRuleRow(v[0]));\n    if (Array.isArray(maybeArr)) inputItems = maybeArr;\n  }\n}\n\n// 방어\nif (!Array.isArray(inputItems)) inputItems = [];\n\n// -------------------- 2) Sentiment Type 기준으로 통합 --------------------\nconst sentimentMap = {};\n\nfor (const row of inputItems) {\n  const type = getType(row);\n  if (!type) continue;\n\n  if (!sentimentMap[type]) {\n    sentimentMap[type] = {\n      definition: getDefinition(row),\n      criteria: splitByNewline(getCriteriaRaw(row)),\n      keywords: splitByCommaOrNewline(getKeywordsRaw(row)),\n      patterns: splitByCommaOrNewline(getPatternsRaw(row)),\n      implicit_expressions: splitByCommaOrNewline(getImplicitRaw(row)),\n    };\n  }\n}\n\n// -------------------- 3) LLM용 텍스트 생성 --------------------\nlet sentimentRulesText = `You must classify sentiment strictly using the following rules.\\n\\n`;\n\nfor (const [type, rule] of Object.entries(sentimentMap)) {\n  sentimentRulesText += `### ${type}\\n`;\n  sentimentRulesText += `Definition: ${rule.definition}\\n`;\n  sentimentRulesText += `Criteria:\\n`;\n  rule.criteria.forEach(c => (sentimentRulesText += `- ${c}\\n`));\n  sentimentRulesText += `Keywords: ${rule.keywords.join(\", \")}\\n`;\n  sentimentRulesText += `Patterns: ${rule.patterns.join(\" | \")}\\n`;\n  sentimentRulesText += `Implicit expressions: ${rule.implicit_expressions.join(\" | \")}\\n\\n`;\n}\n\n// -------------------- 4) 출력 (기대값/양식 유지) --------------------\nreturn [\n  {\n    json: {\n      sentiment_rules: sentimentMap,\n      sentiment_rules_text: sentimentRulesText,\n      debug: {\n        input_items_count: inputItems.length,\n        sentiment_types: Object.keys(sentimentMap)\n      }\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -208,
+        288
+      ],
+      "id": "11fae4c6-e540-4dc6-87c8-cd61c4cddc44",
+      "name": "ADM_Keyword_DATA.LLM",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "products",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.product_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        576
+      ],
+      "id": "b77506a6-ddfe-4918-bdb9-3bfe50a78f51",
+      "name": "Get a row1",
+      "retryOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "n1gePNFJ39RxfpxF",
+          "name": "LG_CNS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1968,
+        432
+      ],
+      "id": "8b24e1ab-ffcc-4478-a03a-f55ac5638f85",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -576,
+        112
+      ],
+      "id": "60f9541b-fef4-48af-9e14-17552e648c90",
+      "name": "Wait",
+      "webhookId": "e5e53fc3-8d7a-4699-9fb2-2b85bbfd6b8d"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ec81ed47-4603-482c-bfcc-dd62d3bffb39",
+              "name": "product_id",
+              "value": "={{ $('get_subreddit_list').item.json.product_id }}",
+              "type": "string"
+            },
+            {
+              "id": "310883d3-e5e6-48fd-8be4-c3310ebf0b97",
+              "name": "reddit_post_id",
+              "value": "={{ $json.data.id }}",
+              "type": "string"
+            },
+            {
+              "id": "a8621628-5146-418c-984b-29c98a61b6a5",
+              "name": "subreddit",
+              "value": "={{ $json.data.subreddit }}",
+              "type": "string"
+            },
+            {
+              "id": "306d349e-236a-4b3c-a295-a4605ce8b5ba",
+              "name": "post_created_at",
+              "value": "={{ new Date(Number($json.data.created_utc) * 1000).toISOString() }}",
+              "type": "string"
+            },
+            {
+              "id": "8e6b4b9c-6f5d-41dd-a035-180b00c2f905",
+              "name": "title",
+              "value": "={{ $json.data.title }}",
+              "type": "string"
+            },
+            {
+              "id": "639da396-a2ed-4a7f-97c3-647236a36955",
+              "name": "body",
+              "value": "={{ $json.data.selftext }}",
+              "type": "string"
+            },
+            {
+              "id": "9625d4d0-ac80-4b70-abef-7cf596b471dc",
+              "name": "author",
+              "value": "={{ $json.data.author }}",
+              "type": "string"
+            },
+            {
+              "id": "0c8b9981-e747-4f1c-b927-753b1a34dc9f",
+              "name": "post_link",
+              "value": "={{ 'https://www.reddit.com' + $json.data.permalink }}",
+              "type": "string"
+            },
+            {
+              "id": "86c130ab-bf83-45cd-8c44-e43e04ff6f27",
+              "name": "image_urls",
+              "value": "={{\n(() => {\n  // split 이후 구조가 $json.data가 아닐 수도 있어서 둘 다 커버\n  const d = $json.data ?? $json;\n\n  const mediaId = d.gallery_data?.items?.[0]?.media_id;\n\n  const galleryUrl =\n    (d.media_metadata && mediaId && d.media_metadata[mediaId] && d.media_metadata[mediaId].s && d.media_metadata[mediaId].s.u)\n    || '';\n\n  const previewUrl = d.preview?.images?.[0]?.source?.url || '';\n\n  const url = galleryUrl || previewUrl || '';\n\n  // replaceAll 대신 replace(/.../g)로 호환성 확보\n  return String(url).replace(/&amp;/g, '&');\n})()\n}}\n",
+              "type": "string"
+            },
+            {
+              "id": "bcd3ecca-c649-4cad-8950-c71e018aa1fd",
+              "name": "upvote_ratio",
+              "value": "={{ $json.data.upvote_ratio }}",
+              "type": "number"
+            },
+            {
+              "id": "23bc5b0f-90a9-4465-8d50-88c1057f5c12",
+              "name": "upvote_count",
+              "value": "={{ $json.data.ups }}",
+              "type": "number"
+            },
+            {
+              "id": "ba97255b-5bec-4af2-b101-7fc2bc353db2",
+              "name": "comment_count",
+              "value": "={{ $json.data.num_comments }}",
+              "type": "number"
+            },
+            {
+              "id": "ac61128c-935b-4da2-a7e8-ae68338f3bd9",
+              "name": "engagement_score",
+              "value": "={{ $json.data.ups+$json.data.num_comments }}",
+              "type": "number"
+            },
+            {
+              "id": "9d3ad563-7e0d-493f-82e8-e21708d92d02",
+              "name": "include_keywords",
+              "value": "={{ $('Loop Over Items1').item.json.include_keywords }}",
+              "type": "string"
+            },
+            {
+              "id": "1009662f-c064-46f1-b1b1-66cfe0281ec9",
+              "name": "exclude_keywords",
+              "value": "={{ $('Loop Over Items1').item.json.exclude_keywords }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2176,
+        528
+      ],
+      "id": "89c4d41b-df62-460e-8360-b78b3def3808",
+      "name": "경량화",
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -928,
+        496
+      ],
+      "id": "34f9e85f-8310-49c0-8aef-0c6dab059287",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "voc_posts",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Update_중복').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "priority_score",
+              "fieldValue": "={{ $json.weight_score*$('Update_중복').item.json.engagement_score }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        720
+      ],
+      "id": "28645f31-e1ad-451e-9408-157ef7f8bce0",
+      "name": "Update_priority_score",
+      "retryOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "n1gePNFJ39RxfpxF",
+          "name": "LG_CNS"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "product_insight_weights",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "insight_type_id",
+              "keyValue": "={{ $json.insight_type_id }}"
+            },
+            {
+              "keyName": "product_id",
+              "keyValue": "={{ $json.product_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        720
+      ],
+      "id": "114a0d26-1de3-4003-b8ab-02e309c31323",
+      "name": "Get_insight_type_id",
+      "retryOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "n1gePNFJ39RxfpxF",
+          "name": "LG_CNS"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "voc_posts",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "product_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Loop Over Items').item.json.product_id }}"
+            },
+            {
+              "keyName": "reddit_post_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Loop Over Items').item.json.reddit_post_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "updated_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            },
+            {
+              "fieldId": "upvote_count",
+              "fieldValue": "={{ $('Loop Over Items').item.json.upvote_count }}"
+            },
+            {
+              "fieldId": "comment_count",
+              "fieldValue": "={{ $('Loop Over Items').item.json.comment_count }}"
+            },
+            {
+              "fieldId": "engagement_score",
+              "fieldValue": "={{ $('Loop Over Items').item.json.engagement_score }}"
+            },
+            {
+              "fieldId": "image_urls",
+              "fieldValue": "={{\n(() => {\n  const v =\n    $('Loop Over Items').item.json.image_urls ??\n    $('Loop Over Items').item.json.image_url ??\n    null;\n\n  if (v == null) return [];\n\n  const arr = Array.isArray(v) ? v : [v];\n\n  return arr\n    .map(x => {\n      if (x == null) return '';\n      // 문자열이면 trim + &amp; 정리(원하면 제거 가능)\n      return String(x).replace(/&amp;/g, '&').trim();\n    })\n    .filter(x => x !== ''); // ✅ '\\n', '   ' 전부 제거됨\n})()\n}}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        720
+      ],
+      "id": "cd68586a-7aa4-440d-be8c-9e26f72086d4",
+      "name": "Update_중복",
+      "retryOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "n1gePNFJ39RxfpxF",
+          "name": "LG_CNS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "voc_posts",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "product_id",
+              "keyValue": "={{ $json.product_id }}"
+            },
+            {
+              "keyName": "reddit_post_id",
+              "keyValue": "={{ $json.post_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        816,
+        -32
+      ],
+      "id": "9e423fde-c2d5-48f8-a7c6-c1b1fff65452",
+      "name": "Get a row2",
+      "retryOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "n1gePNFJ39RxfpxF",
+          "name": "LG_CNS"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b5c83781-ed28-4640-a55e-f9203bd1bbef",
+              "leftValue": "={{ $json.insight_type_id }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        944,
+        128
+      ],
+      "id": "312947bc-f682-41f4-bf40-fbd624f9427a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -3328,
+        320
+      ],
+      "id": "75717e64-9cc9-467d-aec8-279fec6909b6",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "batchSize": 30,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1072,
+        -304
+      ],
+      "id": "eb6e4851-73f0-40f0-b881-8005235d5c96",
+      "name": "Loop Over Items3"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * 6) + 5 }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -192,
+        -176
+      ],
+      "id": "28ea360e-bc59-4d5e-9454-0f2e32c9962f",
+      "name": "Wait1",
+      "webhookId": "dd8e3048-686b-418c-af3e-98982eb1d2cb"
+    },
+    {
+      "parameters": {
+        "jsCode": "const p1 = $items('Reddit api1')?.[0]?.json?.data?.children ?? [];\nconst p2 = $items('Reddit api2')?.[0]?.json?.data?.children ?? [];\n\nconst all = [...p1, ...p2];\n\n// (선택) 중복 제거\nconst seen = new Set();\nconst deduped = [];\nfor (const c of all) {\n  const id = c?.data?.id ?? c?.data?.name;\n  if (id && seen.has(id)) continue;\n  if (id) seen.add(id);\n  deduped.push(c);\n}\n\n// ✅ Split Out이 기대하는 모양: { data: { children: [...] } }\nreturn [{\n  json: {\n    data: {\n      children: deduped,\n      dist: deduped.length,\n      after: null,\n      before: null,\n    }\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2528,
+        528
+      ],
+      "id": "af164958-d38e-40de-84c3-1f031fe86cb0",
+      "name": "Code in JavaScript",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "url": "=https://oauth.reddit.com/r/{{ $('get_subreddit_list').item.json.subreddit_name }}/{{ $('get_subreddit_list').item.json.filter_sort }}.json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "t",
+              "value": "=week"
+            },
+            {
+              "name": "limit",
+              "value": "=100"
+            },
+            {
+              "name": "after",
+              "value": "={{$node[\"Reddit api1\"].json.data.after}}"
+            },
+            {
+              "name": "count",
+              "value": "100"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "LG-CNS-VOC-Bot/1.0"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node[\"When Executed by Another Workflow\"].json[\"access_token\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2672,
+        528
+      ],
+      "id": "8769b7a1-b951-4fb9-aae6-cbfe0ec1de41",
+      "name": "Reddit api2",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * n8n Function / Code node\n * - 입력: $json (질문에 올린 gemini 응답 원본 JSON)\n * - 출력: 브랜드인사이트DATA를 항상 Array로 반환\n */\nfunction extractAndParseGeminiTextPayload(input) {\n  // 1) text 위치에서 문자열 꺼내기\n  let text = input?.candidates?.[0]?.content?.parts?.[0]?.text;\n\n  // 어떤 경우엔 payload 자체가 문자열일 수도 있어서 보정\n  if (text == null && typeof input === \"string\") {\n    text = input;\n  }\n\n  if (typeof text !== \"string\" || !text.trim()) {\n    throw new Error(\"Gemini text payload not found or empty.\");\n  }\n\n  // 2) 코드펜스(```json ... ```) 같은 게 끼어있으면 제거\n  let cleaned = text\n    .trim()\n    .replace(/^```(?:json)?\\s*/i, \"\")\n    .replace(/\\s*```$/i, \"\");\n\n  // 3) JSON 배열/객체 시작 전후에 잡텍스트가 섞였을 때를 대비해 최소 컷팅\n  const firstArr = cleaned.indexOf(\"[\");\n  const firstObj = cleaned.indexOf(\"{\");\n  let start = -1;\n\n  if (firstArr === -1 && firstObj === -1) {\n    throw new Error(\"No JSON start token found in text.\");\n  }\n  if (firstArr === -1) start = firstObj;\n  else if (firstObj === -1) start = firstArr;\n  else start = Math.min(firstArr, firstObj);\n\n  const lastArr = cleaned.lastIndexOf(\"]\");\n  const lastObj = cleaned.lastIndexOf(\"}\");\n  const end = Math.max(lastArr, lastObj);\n\n  if (end < start) {\n    throw new Error(\"No JSON end token found in text.\");\n  }\n\n  cleaned = cleaned.slice(start, end + 1);\n\n  // 4) 파싱\n  return JSON.parse(cleaned);\n}\n\n// n8n 실행부\nconst input = $json;\nconst parsed = extractAndParseGeminiTextPayload(input);\n\n// ✅ 항상 배열로 통일\nconst 감정분석및논점분석DATA = Array.isArray(parsed) ? parsed : [parsed];\n\n// 필요 형태로 반환\nreturn [\n  {\n    json: {\n      감정분석및논점분석DATA,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        400
+      ],
+      "id": "006b7940-1b91-4d9d-9326-759aa748cc7a",
+      "name": "감정분석 및 논점분석DATA1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "voc_posts",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "reddit_post_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.post_id }}"
+            },
+            {
+              "keyName": "product_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.product_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "insight_type_id",
+              "fieldValue": "={{ $json.insight_type_id }}"
+            },
+            {
+              "fieldId": "sentiment_type",
+              "fieldValue": "={{ $json[\"감정분석및논점분석DATA\"][0].sentiment_overall }}"
+            },
+            {
+              "fieldId": "sentiment_doc_sentences",
+              "fieldValue": "={{ $json[\"감정분석및논점분석DATA\"][0].sentiment_doc_sentences }}"
+            },
+            {
+              "fieldId": "sentiment_score_distribution",
+              "fieldValue": "={{ $json[\"감정분석및논점분석DATA\"][0].sentiment_score_distribution }}"
+            },
+            {
+              "fieldId": "summary_main",
+              "fieldValue": "={{ $json[\"감정분석및논점분석DATA\"][0].summary_main_summary }}"
+            },
+            {
+              "fieldId": "comment_sentiment_type",
+              "fieldValue": "={{ $json[\"감정분석및논점분석DATA\"][0].comment_sentiment }}"
+            },
+            {
+              "fieldId": "comment_summary",
+              "fieldValue": "={{ $json[\"감정분석및논점분석DATA\"][0].comment_summary }}"
+            },
+            {
+              "fieldId": "key_topics",
+              "fieldValue": "={{ $json[\"감정분석및논점분석DATA\"][0].key_topics }}"
+            },
+            {
+              "fieldId": "highlight_quotes",
+              "fieldValue": "={{ $json[\"감정분석및논점분석DATA\"][0].highlight_quotes }}"
+            },
+            {
+              "fieldId": "priority_score",
+              "fieldValue": "={{ ($json.score + $json.comments_count)*$json.final_weight }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        528
+      ],
+      "id": "0d23cef2-584a-4fa4-b2e1-6639c7eaebb7",
+      "name": "Update a row",
+      "retryOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "n1gePNFJ39RxfpxF",
+          "name": "LG_CNS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "tbs_list_table",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "post_id",
+              "fieldValue": "={{ $json.reddit_post_id }}"
+            },
+            {
+              "fieldId": "subreddit_id",
+              "fieldValue": "={{ $json.subreddit }}"
+            },
+            {
+              "fieldId": "last_upvote_ratio",
+              "fieldValue": "={{ $json.upvote_ratio }}"
+            },
+            {
+              "fieldId": "last_upvote_count",
+              "fieldValue": "={{ $json.upvote_count }}"
+            },
+            {
+              "fieldId": "last_comment_count",
+              "fieldValue": "={{ $json.comment_count }}"
+            },
+            {
+              "fieldId": "status_send",
+              "fieldValue": "false"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2768,
+        496
+      ],
+      "id": "3e970cc5-2bf1-462a-9203-4a35e107ac9a",
+      "name": "Update_TBS_List_Table",
+      "retryOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "n1gePNFJ39RxfpxF",
+          "name": "LG_CNS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "736f06a6-4826-42ad-8ed8-6ea7db4bad01",
+              "leftValue": "={{ $json.insight_type_id }}",
+              "rightValue": 16,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2480,
+        512
+      ],
+      "id": "40bbd3e1-ec94-4777-833c-f9f635bf7451",
+      "name": "TBS_2?",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-pro",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-pro"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=post_id:\n{{ $('Split Out1').item.json.post_id }}\n\nSubreddit:\n{{ $('Split Out1').item.json.subreddit }}\n\nPost Title:\n{{ $('Split Out1').item.json.title }}\n\nPost Body:\n{{ $('Split Out1').item.json.body }}\n\nComments (reference only):\n{{ $('Split Out1').item.json.comment_threads_text }}\n\nDefinitions & Classification Criteria:\n{{ $('Merge').item.json.brandRuleData.toJsonString() }}\n\nIMPORTANT OUTPUT RULES:\n- Output MUST be valid JSON only. No extra text.\n- Do NOT use ellipses (\"...\") or placeholders anywhere.\n- Choose \"insight_type\" as EXACTLY ONE of allowed_insight_types.\n- If evidence cannot be found verbatim in the post/comments, return an empty array [] (do NOT use \"...\").\n\nReturn JSON in the following format only:\n{\n  \"post_id\": \"<string>\",\n  \"insight_type\": \"<one category>\",\n  \"reason\": \"<one short sentence>\",\n  \"evidence\": [\"<exact quote1>\", \"<exact quote2>\"],\n  \"confidence\": <number between 0 and 1>\n}"
+            }
+          ]
+        },
+        "simplify": false,
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {
+          "systemMessage": "=You are a strict and conservative brand-insight classifier for Reddit posts.\n\nYour task is to classify the post into exactly ONE category.\n\nPrimary judgment MUST be based on the post title and body.\nComments are secondary signals used only to support, confirm, or weaken the judgment.\n\nYou must NOT infer intent beyond what is explicitly written.\n\nAllowed categories (choose exactly one):\n{{ $('Merge').item.json.brandRuleData.toJsonString() }}\n\nRules:\n\n- Prioritize title and body over comments.\n- Do NOT classify based solely on comments if the post itself is non-substantive.\n- Evidence must be copied verbatim from the provided text.\n- Provide no more than 3 short evidence quotes.\n- If multiple categories appear, choose the single most dominant one.\n- Do NOT hallucinate missing content.\n\nOutput ONLY valid JSON.\nDo not include markdown or explanatory text."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1392,
+        256
+      ],
+      "id": "6cdbefab-9a90-4098-8763-3ca1a87ce047",
+      "name": "브랜드인사이트분석1",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "qqIGtwVepxHLjplW",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-pro",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-pro"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Input:\n1) Sentiment Criteria (LG VOC):\n{{ $('Merge').item.json.brandRuleData.toJsonString() }}\n\n2) Document (Reddit):\n{{ $('Split Out1').item.json.toJsonString() }}\n\nTask:\n- Performs LG VOC analysis and returns a structured JSON report.\n- Return ONLY valid JSON.\n- Do not add or rename any top-level JSON keys.\n\nAdditional constraints:\n- summary_main_summary must be based on TITLE/BODY only and must NOT contain:\n  \"댓글\", \"댓글에서는\", \"댓글에선\", \"댓글에서\", \"작성자\", \"글쓴이\", \"OP\"\n- Do NOT translate or phoneticize product/brand/tech names (e.g., Sonos, Super Ultrawide, QD-OLED, G-SYNC, HDMI 2.2, Dolby Vision 2). Keep original tokens.\n- Negative wording must be softened (avoid \"강한 비난 표출\" style). Focus on the issue being raised.\n- Before final output, polish sentences for natural Korean without adding new information.\n- comment_sentiment/comment_summary는 “본문(title/body) 논점과 연계되는 댓글”만 기준으로 작성한다(본문은 관련도 필터 용도).\n\nQuote/evidence rules:\n- Wrap all quotes in <b>...</b>\n- Remove URLs (http://, https://, www.)\n- If a quote/evidence exceeds 200 characters INCLUDING spaces after URL removal,\n  excerpt only the 핵심 구간 verbatim within 200 characters (no paraphrase).\n  You may use \"…\" to indicate omission.\n\nOUTPUT JSON KEYS (MUST MATCH EXACTLY):\nsentiment_overall,\nsentiment_score_distribution,\nsentiment_doc_sentences,\nsummary_main_summary,\ncomment_sentiment,\ncomment_summary,\nkey_topics,\nhighlight_quotes"
+            }
+          ]
+        },
+        "simplify": false,
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {
+          "systemMessage": "=You are a Social Listening Analyst.\n\n[ROLE / GOAL]\n- 국제 사용자 Reddit 콘텐츠에서 VOC 신호를 추출하여 제품/마케팅/CX팀이 활용 가능한 “보고용 정리(JSON)”를 생성한다.\n\n[NON-NEGOTIABLE RULES]\n1) 제공된 입력(제목/본문/댓글/메타) 밖의 추정, 외부지식, 과장, 임의 해석 금지.\n2) 해결책/개선안/전략/권장/처방 제안 금지. (판단/평가/책임소재 단정 금지)\n   - 단, 사용자(본문/댓글)가 스스로 “추천/권장/더 나은 선택”을 언급한 경우,\n     ‘추천/권장 의견 존재’로 관찰된 반응을 요약하는 것은 허용.\n3) 밈/농담/의미 없는 반응 위주면 VOC 신호가 약한 것으로 보고 중립적으로 처리한다.\n4) 출력은 오직 “유효한 JSON 1개”만 반환한다. 마크다운/설명문/여분 텍스트 금지.\n5) 최상위 JSON 키는 절대 추가/삭제/변경하지 않는다. (키 이름 정확히 일치)\n\n[LANGUAGE / TONE RULES]\n- 설명 텍스트 값은 모두 한국어로 작성한다.\n- JSON key 및 sentiment label(Positive/Negative/Neutral)만 영어 허용.\n- 한국어 톤은 “요약 메모체”로 작성한다:\n  * 군더더기 없이 짧게, \"~함/~공유함/~제공함/~만족함/~우려함/~검토 중/~고려 중\" 종결 사용\n  * \"~요/~해요\" 금지, \"~확인됩니다/~관찰됩니다\" 공문체 금지\n  * \"게시함/명시함\" 금지 → \"언급함/작성함\" 사용\n- 메타 표현 금지: \"예시/예:/예를 들어/e.g./example\" 등의 라벨을 설명문에서 사용하지 않는다.\n  (단, 원문에 포함된 경우에 한해 인용문 내부에서만 허용)\n\n[TERMS]\n- \"OP\" 토큰 출력 금지.\n- 화자 표기는 sentiment_doc_sentences에서만 강제한다:\n  * source가 comment이면 “댓글 작성자” 표현 포함\n  * source가 title/body이면 “작성자” 표현 포함\n- 주의: summary_main_summary에서는 “작성자/글쓴이/OP” 등 화자 지칭을 절대 사용하지 않는다.\n\n───────────────────────────────────────────────\nCUSTOMER PATCH A: NON-TRANSLATION RULES (고유명사/제품명/기술명 번역 금지)\n───────────────────────────────────────────────\n- 아래 항목은 한국어 문장 안에서도 원문 표기를 그대로 유지한다(번역/음역/의미변환 금지).\n  1) 브랜드/경쟁사/서비스/제품명/모델명: Sonos, LG XBOOM Stage 301 등\n  2) 디스플레이/오디오/연결 규격 및 기능명: Super Ultrawide, QD-OLED, HDR, Anti-Glare, G-SYNC, VRR, eARC, HDMI 2.2, Dolby Vision 2 등\n  3) 대문자/숫자/하이픈/점이 포함된 토큰 및 2~5자 약어\n- 원문에 영문 표기가 있으면 그대로 사용하며, ‘소노스/초광각모니터’처럼 한글로 바꾸지 않는다.\n- 단, 원문에 이미 한글 표기만 존재하는 경우에는 그 한글 표기를 그대로 쓴다(역번역 금지).\n\n───────────────────────────────────────────────\nCUSTOMER PATCH B: NEGATIVE TONE SOFTENING (부정 표현 순화)\n───────────────────────────────────────────────\n- Negative 요약 문장(특히 comment_summary, key_topics의 설명문, why_important)에서\n  “감정 강도”를 과장하는 표현을 금지한다.\n  * 금지: \"강한/격한/맹비난/비난 표출/조롱/모욕/욕설/극딜/폭격\"\n- 대신 “관찰된 논점” 중심의 중립 어휘로 순화한다.\n  * 권장 치환:\n    - \"비난\" → \"비판\"\n    - \"강한 비난 표출\" → \"부정적 평가 제기\" 또는 \"품질 비판 제기\"\n    - \"의혹 제기\"는 유지 가능하나 과장 수식어는 금지\n- 원문이 공격적 표현을 포함하더라도,\n  요약 문장은 ‘무엇을 문제 삼는지’ 중심으로 서술한다.\n- 단, 인용문(<b>...</b>)은 원문 그대로 유지한다(내용/톤 변형 금지).\n\n───────────────────────────────────────────────\nGLOBAL QUOTE / EVIDENCE PROCESSING RULES (Strict)\n───────────────────────────────────────────────\n- quote/evidence 문자열은 “원문 그대로”를 원칙으로 한다(의역/요약 금지).\n- 단, 아래 2가지 전처리를 반드시 적용한다:\n\n(1) URL 제거(Strict)\n- quote/evidence에는 URL(http://, https://, www.)을 절대 포함하지 않는다.\n- URL이 포함된 경우:\n  a) URL만 삭제하고, 나머지 단어/문장 순서는 변경하지 않는다.\n  b) URL 삭제로 문장이 지나치게 짧아지면, URL이 없는 다른 대표 문장을 선택한다.\n\n(2) 길이 제한: 공백 포함 200자(Strict)\n- URL 제거 후에도 quote/evidence가 공백 포함 200자를 초과하면:\n  a) “핵심 구간”만 원문 그대로 발췌하여 200자 이내로 만든다(의역/재작성 금지).\n  b) 생략이 발생하면, 생략 표시로 “…”를 사용할 수 있다.\n  c) 발췌는 가능하면 하나의 연속된 구간을 우선한다(불가 시 최소한의 생략으로 구성).\n\n───────────────────────────────────────────────\nCUSTOMER PATCH C: DETAIL PRIORITY + FINAL POLISH (기술 디테일 강화 + 최종 문장 다듬기)\n───────────────────────────────────────────────\n[DETAIL PRIORITY]\n- “두루뭉실 표현”만으로 요약하는 것을 금지한다.\n  * 금지 예(단독 사용): \"긍정적 경험 공유함\", \"만족함\", \"불만 있음\", \"호불호 갈림\"\n- 가능하면 다음 요소 중 최소 1~2개를 포함하여 구체적으로 서술한다(입력에 존재할 때만):\n  1) 모델/라인/사이즈/세대 (예: 77/83인치, C5→C6)\n  2) 기술/스펙 키워드(예: QD-OLED, HDR, Anti-Glare, G-SYNC, HDMI 2.2, Dolby Vision 2)\n  3) 환경/조건(예: PS5/PC, 게임모드, 업데이트 이후, 특정 연결/설정)\n  4) 업그레이드 가치/비교 논점(예: 할인된 G5 선택 논의, 차별점 부족)\n- 위 키워드는 CUSTOMER PATCH A에 따라 원문 표기를 유지한다(번역 금지).\n\n[FINAL POLISH PASS]\n- 최종 JSON 출력 직전, 아래 필드의 “설명 문장”만 1회 자연스럽게 다듬는다:\n  * summary_main_summary, comment_summary(요약 문장 부분), key_topics의 설명, highlight_quotes.why_important, sentiment_doc_sentences의 문장\n- 다듬기 범위:\n  * 어순/조사/중복 단어 정리\n  * 문장 호흡을 간결화\n- 금지:\n  * 새로운 정보 추가, 추정, 의미 변경, 원문에 없는 기술 설명 추가\n  * 인용문(<b>...</b>) 변경\n\n[CONTEXT-LINKING RULE FOR COMMENTS]\n- title/body는 comment_sentiment/comment_summary 작성 시 “댓글 관련도 판단(필터링)” 용도로만 사용한다.\n- comment_sentiment/comment_summary 문장 자체는 “댓글에서 관찰된 내용”만으로 작성한다(본문 주장/정보를 문장에 섞지 않는다).\n- 본문 논점과 직접 연계되는 댓글만 대표 의견으로 채택한다.\n  * 연계 기준 예: 동일 제품/모델/기술/이슈/사용 조건/비교 대상/질문 의도에 대한 직접 언급 또는 명확한 대응.\n  * 금지 예: 본문과 무관한 일반 칭찬/밈/감탄(“great”, “nice”, “congrats” 등)만 있는 경우는 대표 의견으로 채택하지 않는다.\n\n[BOT COMMENT EXCLUSION RULE]\n- 댓글 본문에 \"i am a bot\" 또는 \"performed automatically\" 문구가 포함된 경우,\n  해당 댓글은 자동 봇 댓글로 간주하고 모든 댓글 분석(comment_sentiment, comment_summary, key_topics, highlight_quotes 등)에서 완전히 제외한다.\n\n\n───────────────────────────────────────────────\nFIELD-SPECIFIC RULES\n───────────────────────────────────────────────\n\n(1) sentiment_overall\n- Positive / Negative / Neutral 중 1개\n\n(2) sentiment_score_distribution\n- {\"Positive\":정수,\"Negative\":정수,\"Neutral\":정수}\n- 합은 반드시 100 (정수만)\n\n(3) sentiment_doc_sentences\n- 의미 있는 VOC 문장만 포함(밈/무의미 반응 제외)\n- 각 문장은 반드시 evidence_quotes로 근거를 가진다.\n- source는 \"title\" | \"body\" | \"comment\" 중 1개\n- 화자 표기 규칙을 지킨다(작성자/댓글 작성자)\n- evidence_quotes에도 GLOBAL QUOTE RULES(URL 제거, 200자 제한)을 적용한다.\n\n(4) summary_main_summary (v2.1.1 유지 + 디테일 강화)\n- TITLE/BODY 기반 핵심 1~3개만 요약한다. (댓글 기반 내용 혼입 금지)\n- 반드시 \"• \" 로 시작하는 불렛 1~3줄을 줄바꿈(\\n)으로 연결한 “단일 문자열(string) 1개”로 출력한다.\n- 배열(string[]) 출력 금지.\n- 콜론 라벨 금지: \":\" 문자 자체를 summary_main_summary에서 사용 금지.\n- 다음 표현/단어를 summary_main_summary에서 절대 사용하지 않는다:\n  * 댓글 관련: \"댓글\", \"댓글에서는\", \"댓글에선\", \"댓글에서\", \"댓글 반응\", \"댓글에 따르면\"\n  * 화자 관련: \"작성자\", \"글쓴이\", \"OP\", \"작성자는\", \"글쓴이는\"\n- 요약 문장은 사건/요지 중심으로 바로 서술한다(주어 생략).\n- CUSTOMER PATCH C의 DETAIL PRIORITY를 적용하여, 입력에 있는 기술/스펙/환경/비교 디테일을 가능한 범위에서 반영한다.\n\n(5) comment_sentiment\n- COMMENTS 중 “본문 논점과 연계되는 댓글(관련도 통과분)”만 기준으로 전체 감정을 산정한다.: Positive / Negative / Neutral\n\n(6) comment_summary (v2.1 유지 + 순화/디테일 강화)\n- 반드시 “단일 문자열(string) 1개”로 출력한다(줄바꿈 허용).\n- COMMENTS 기반으로 작성하되. (본문(title/body) 내용과 연계되는 댓글을 사용한다 )\n- 본문 내용은 ‘관련도 판단’에만 사용하며, comment_summary 문장에 본문 정보/주장을 직접 포함하지 않는다.\n- 감정 구간은 1~3개만 출력하며(항상 3개 아님), 근거가 있는 감정만 출력한다.\n- \"해당 없음\" 문구 절대 출력 금지.\n- 각 포함된 감정 구간은 반드시 새 줄에서 아래 형식으로 시작한다:\n  (긍정) 요약... <b>대표댓글인용</b>\n  (중립) 요약... <b>대표댓글인용</b>\n  (부정) 요약... <b>대표댓글인용</b>\n- 불릿 문자(\"•\", \"-\", \"*\") 절대 사용 금지.\n- 출력 순서 고정: (긍정) → (중립) → (부정)\n- 요약 문장은 CUSTOMER PATCH B(순화) + CUSTOMER PATCH C(디테일 우선)를 적용한다.\n- 각 구간 끝의 <b>대표댓글인용</b>은 반드시 댓글 원문에서 복사한 직접 인용이어야 하며,\n  GLOBAL QUOTE RULES(URL 제거, 공백 포함 200자 제한/발췌)을 적용한다.\n- 각 감정 구간의 “요약…” 부분은 (1) 대표 의견 1개를 먼저 명시하고, (2) 같은 감정에서 반복 관찰된 추가 논점 1~2개를 ‘또한/아울러’로 이어서 함께 언급한다.\n- 추가 논점이 실제로 반복 관찰되지 않으면 (2)는 생략한다(억지로 만들지 않는다).\n- <b>대표댓글인용</b>은 (1) 대표 의견을 가장 잘 보여주는 댓글로 선택한다.\n- (2)에서 함께 언급한 논점은 key_topics에도 동일하게 반영해 “부정/긍정/중립이 단일 이슈로만 보이는 오해”를 줄인다.\n\nFallback rule (Strict):\n- 댓글이 비어있거나 댓글 분석이 불가능하면:\n  - comment_sentiment = Neutral\n  - comment_summary = EXACTLY:\n    \"수집 시점 기준, 해당 게시물 내 작성된 사용자 댓글 없음\"\n  - 다른 문장 추가 금지\n\n(7) key_topics\n- 주로 댓글 기반의 반복 논점을 정리한다.\n- 각 항목은 “주제명 – 설명” 형태로, 관찰된 패턴만 기술한다(분석가 판단 금지).\n- 설명문에는 CUSTOMER PATCH B(순화) + CUSTOMER PATCH C(디테일 우선)를 적용한다.\n- evidence_quotes 포함 + GLOBAL QUOTE RULES 적용\n\n(8) highlight_quotes\n- 3~6개\n- 가능하면 Positive/Neutral/Negative 균형(가능할 때만)\n- quote는 원문 그대로 + GLOBAL QUOTE RULES 적용 + <b>...</b> 유지\n- why_important는 CUSTOMER PATCH B(순화) + CUSTOMER PATCH C(디테일 우선)를 적용하고,\n  입력 근거 범위에서만 설명한다.\n\n[FINAL SELF-CHECK BEFORE OUTPUT]\n- 최상위 키가 정확히 일치하는가?\n- summary_main_summary/comment_summary가 string 1개인가? (배열 금지)\n- summary_main_summary에 \":\" 문자가 없는가?\n- summary_main_summary에 \"댓글/작성자/글쓴이/OP\" 관련 단어가 없는가?\n- comment_summary에 불릿(\"•\", \"-\", \"*\")이 없는가?\n- 인용문에 URL이 없는가?\n- 인용문이 공백 포함 200자 이내인가?\n- 고유명사/제품명/기술명이 한글로 번역/음역되지 않았는가?\n- Negative 요약에 과격한 강도 표현이 없는가?\n- 근거 없이 단정/추천/추정이 들어가지 않았는가?"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1392,
+        400
+      ],
+      "id": "b8f1e7f4-743d-4ea3-b937-29bcff008894",
+      "name": "감정분석 및 논점분석1",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "qqIGtwVepxHLjplW",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * n8n Function / Code node\n * - 입력: $json (Gemini 응답 원본 JSON or 그게 배열로 감싸진 형태)\n * - 출력: 브랜드인사이트DATA = \"인사이트 객체 배열\"로 항상 통일\n */\n\nfunction pickGeminiEnvelope(input) {\n  // input이 배열이면 candidates 가진 객체를 찾아서 사용\n  if (Array.isArray(input)) {\n    const found = input.find(x => x && typeof x === \"object\" && Array.isArray(x.candidates));\n    return found ?? input[0]; // 없으면 일단 0번\n  }\n  return input;\n}\n\nfunction extractAndParseGeminiTextPayload(rawInput) {\n  const input = pickGeminiEnvelope(rawInput);\n\n  // parts가 여러 개일 수 있으니 text를 전부 이어붙임\n  const parts = input?.candidates?.[0]?.content?.parts;\n  let text = null;\n\n  if (Array.isArray(parts)) {\n    text = parts\n      .map(p => (typeof p?.text === \"string\" ? p.text : \"\"))\n      .filter(Boolean)\n      .join(\"\");\n  } else {\n    text = input?.candidates?.[0]?.content?.parts?.[0]?.text;\n  }\n\n  // payload 자체가 문자열일 수도 있음\n  if (text == null && typeof rawInput === \"string\") text = rawInput;\n\n  if (typeof text !== \"string\" || !text.trim()) {\n    throw new Error(\"Gemini text payload not found or empty.\");\n  }\n\n  // 코드펜스 제거\n  let cleaned = text\n    .trim()\n    .replace(/^```(?:json)?\\s*/i, \"\")\n    .replace(/\\s*```$/i, \"\");\n\n  // JSON 시작/끝 토큰으로 최소 컷팅\n  const firstArr = cleaned.indexOf(\"[\");\n  const firstObj = cleaned.indexOf(\"{\");\n  if (firstArr === -1 && firstObj === -1) throw new Error(\"No JSON start token found in text.\");\n\n  const start =\n    firstArr === -1 ? firstObj :\n    firstObj === -1 ? firstArr :\n    Math.min(firstArr, firstObj);\n\n  const lastArr = cleaned.lastIndexOf(\"]\");\n  const lastObj = cleaned.lastIndexOf(\"}\");\n  const end = Math.max(lastArr, lastObj);\n  if (end < start) throw new Error(\"No JSON end token found in text.\");\n\n  cleaned = cleaned.slice(start, end + 1);\n\n  return JSON.parse(cleaned);\n}\n\n// 인사이트 객체 판별 (네 원하는 형식의 핵심 키)\nfunction isInsightObject(obj) {\n  return (\n    obj &&\n    typeof obj === \"object\" &&\n    !Array.isArray(obj) &&\n    typeof obj.post_id === \"string\" &&\n    typeof obj.insight_type === \"string\"\n  );\n}\n\n// 래퍼(results/data/브랜드인사이트DATA/items 등) 상관없이 재귀로 인사이트만 수집\nfunction collectInsights(node, out, depth = 0) {\n  if (node == null || depth > 30) return;\n\n  if (Array.isArray(node)) {\n    for (const item of node) collectInsights(item, out, depth + 1);\n    return;\n  }\n\n  if (typeof node !== \"object\") return;\n\n  if (isInsightObject(node)) {\n    out.push(node);\n    return;\n  }\n\n  // 자주 나오는 래퍼 키 우선\n  const wrapperKeys = [\"브랜드인사이트DATA\", \"results\", \"data\", \"items\", \"result\"];\n  for (const k of wrapperKeys) {\n    if (k in node) collectInsights(node[k], out, depth + 1);\n  }\n\n  // 나머지도 전부 탐색(예측 불가 래퍼 대응)\n  for (const v of Object.values(node)) {\n    collectInsights(v, out, depth + 1);\n  }\n}\n\n// ===== n8n 실행부 =====\nconst rawInput = $json;\nconst parsed = extractAndParseGeminiTextPayload(rawInput);\n\nconst insights = [];\ncollectInsights(parsed, insights);\n\n// ✅ 최종: 항상 인사이트 객체 배열\n// (아예 못 찾으면 디버깅용으로 parsed를 배열화해서 반환하거나, 강하게 에러내도 됨)\nconst 브랜드인사이트DATA = insights.length > 0\n  ? insights\n  : (Array.isArray(parsed) ? parsed : [parsed]);\n\nreturn [{ json: { 브랜드인사이트DATA } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        256
+      ],
+      "id": "827fabb0-af29-478c-9b19-11478725b00d",
+      "name": "브랜드인사이트DATA1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "insight_types",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "type_name",
+              "keyValue": "={{ $json[\"브랜드인사이트DATA\"]?.[0]?.insight_type }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2016,
+        256
+      ],
+      "id": "b86bdce1-1c60-4eb3-8428-cd1083182e28",
+      "name": "Get a row",
+      "retryOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "n1gePNFJ39RxfpxF",
+          "name": "LG_CNS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "product_insight_weights",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "product_id",
+              "keyValue": "=492ad99a-da6a-4cd0-afa4-016bc5abb7d8"
+            },
+            {
+              "keyName": "insight_type_id",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2192,
+        256
+      ],
+      "id": "ad41d44c-adb8-4da4-9993-31922c3ccb71",
+      "name": "Get_product_insight_weights",
+      "executeOnce": false,
+      "retryOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "n1gePNFJ39RxfpxF",
+          "name": "LG_CNS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1216,
+        112
+      ],
+      "id": "2f76dd84-4c13-4e06-8995-b2b14877fbdb",
+      "name": "Loop Over Items2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0f58c432-4325-492d-a2b8-c6a6b99b52a4",
+              "name": "final_weight",
+              "value": "={{ $json.weight_score }}",
+              "type": "number"
+            },
+            {
+              "id": "0ed1755e-4df3-4ad9-8c31-b453e28a8427",
+              "name": "post_id",
+              "value": "={{ $('Loop Over Items2').item.json.reddit_post_id }}",
+              "type": "string"
+            },
+            {
+              "id": "4314cd49-00fa-478d-b36b-f9ef3110b6ce",
+              "name": "product_id",
+              "value": "={{ $('Loop Over Items2').item.json.product_id }}",
+              "type": "string"
+            },
+            {
+              "id": "1be639e4-9e8d-4aa2-bf55-749021713d55",
+              "name": "insight_type_id",
+              "value": "={{ $json.insight_type_id }}",
+              "type": "number"
+            },
+            {
+              "id": "4bb4f4cb-3efa-4cec-bee5-c96a16960ace",
+              "name": "score",
+              "value": "={{ $('Loop Over Items2').item.json.upvote_count }}",
+              "type": "number"
+            },
+            {
+              "id": "53134b6b-bfec-4244-854e-571ca531db17",
+              "name": "comments_count",
+              "value": "={{ $('Loop Over Items2').item.json.comment_count }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2368,
+        256
+      ],
+      "id": "a9dba4a4-806b-40fc-99f7-dbbfc372df3f",
+      "name": "weight"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2016,
+        512
+      ],
+      "id": "41132666-786c-419f-9ec4-eb718d21011e",
+      "name": "Merge4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3d91f51c-9b1d-438c-a171-efa6b4017a43",
+              "leftValue": "={{ $json.comment_count }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "73b7cc64-eaef-4ee3-af31-1a7264c834c9",
+              "leftValue": "={{ $json.comment_count }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        704,
+        384
+      ],
+      "id": "555f3ba8-e253-45a9-96ce-f2461b208445",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "tableId": "voc_posts",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.product_id }}"
+            },
+            {
+              "keyName": "reddit_post_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.reddit_post_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        928,
+        384
+      ],
+      "id": "2004061d-afc5-45c6-8cca-42d299168ed2",
+      "name": "Delete a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "n1gePNFJ39RxfpxF",
+          "name": "LG_CNS"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "access_token": "eyJhbGciOiJSUzI1NiIsImtpZCI6IlNIQTI1NjpzS3dsMnlsV0VtMjVmcXhwTU40cWY4MXE2OWFFdWFyMnpLMUdhVGxjdWNZIiwidHlwIjoiSldUIn0.eyJzdWIiOiJ1c2VyIiwiZXhwIjoxNzcyMjgzNjAwLjcyNDM0NywiaWF0IjoxNzcyMTk3MjAwLjcyNDM0NywianRpIjoiVjQzN1EyUjNGa0VvRmlMTHJqaEhfNW5yNzRfbExRIiwiY2lkIjoiTDJjZmFQbmNVRWVmVGRTMWdtdTA2USIsImxpZCI6InQyXzEyMXZocnRpNmsiLCJhaWQiOiJ0Ml8xMjF2aHJ0aTZrIiwiYXQiOjEsImxjYSI6MTcxNzg0MTYyNTgyMCwic2NwIjoiZUp5S1Z0SlNpZ1VFQUFEX193TnpBU2MiLCJmbG8iOjl9.PakhDoGFVKh5LlbIw0Ba-zUdV6SzOC1_zQlOahVqoYfuDx9bsx506gA7dSS69ssojxmy4xg18SftUxKqF_NDWG2BB9QwkhDYWk6lCN_4YxebdIC2ZPUUT8ZDFztUwz157GkfReD3STBEbhSCMwBCpjZ4ovI-WIzY8gXO9cnT-UsAzy0mzu5ciJCr_N0bHsT5rCdP6Y5ke1grj2z5IA1W1D5e1NlTm3Bu-P7oN2O-kp_DqmbDjSRix5GB-RSAUSGdGv-JEotJzG-DZjR_Wra50S7zYrLVvVhcDr_7DrR8EXDAmHEKm5w3jPyXpkZFuX2yfwWjr2S1TJ4ZWEFkpxA-Pg",
+          "token_type": "bearer",
+          "expires_in": 86400,
+          "scope": "*",
+          "id": "492ad99a-da6a-4cd0-afa4-016bc5abb7d8",
+          "category_id": "3007b8e6-8be6-4f64-b071-30652faee68c",
+          "name": "UltraGear",
+          "updated_at": "2026-01-25T10:28:04.262244+00:00",
+          "is_active": true,
+          "include_keywords": "UltraGear,52g930b,52G930,45gx950,45gx950a,45gx90sa-b,45gx990a,45gr95qe,45gr65dc-b,45gs95qe,45gs95qe-b,45gs96qb-b,39gx950b,39gx900a,39gx900a-b,39gx90sa-w,39gs95qe,39gs95qe-b,39gs96qb-b,34gs95qe,34gs95qe-w,34gx90sa,34gx900a-b,34gx900a,34gx90sa-w,32gx870,32gx870a,32gx870b,32gx850,32gx850a-b,32gr93u,32gr93u-b,32gs95uv,32gs95uv-b,32gs95uv-w,32gs60qc-b,32gs95ux-b,27g610a,27g610a-b,27gx700a,27gx700a-b,27gx704a-b,27gx790,27gx790a,27gx790b,27gx790a-b,27gx790b-b,27gx950,27gx950b,27gm950,27gm950b,5K2K,gm9,gx7,gx8,gx9,LG UltraGear,UltraGear evo,ultra gear,LG UltraWide,LG Gaming Monitor,5k2k monitor,lg 5k2k,45gx950a-b,800r,lg 45\",lg 39\",lg 34\",lg 32\",lg 27\",lg g9",
+          "exclude_keywords": "lumix,camera,car,lg tv,samsung tv,lg g6,Christopher Nolan,The Odyssey",
+          "filter_sort": "top",
+          "filter_time": "week",
+          "min_engagement_score": 10,
+          "collection_limit": 100,
+          "curation_order": 1
+        },
+        "binary": {},
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "get_subreddit_list": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reddit api1": {
+      "main": [
+        [
+          {
+            "node": "Reddit api2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out2": {
+      "main": [
+        [
+          {
+            "node": "경량화",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Reddit api1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "키워드 필터링",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "step1_final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "키워드 필터링": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many comments in a post1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "댓글1차필터링1": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "댓글1차필터링1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update_중복",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM용 DATA필터링1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "step1_final": {
+      "main": [
+        [
+          {
+            "node": "Get_insight_types",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop Over Items3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get_insight_types": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get_sentiment_definitions": {
+      "main": [
+        [
+          {
+            "node": "ADM_Keyword_DATA.LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Get a row2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AMD_Brand_DATA.LLM": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "ADM_Keyword_DATA.LLM": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Get a row1": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "AMD_Brand_DATA.LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "경량화": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Get_sentiment_definitions",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update_priority_score": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get_insight_type_id": {
+      "main": [
+        [
+          {
+            "node": "Update_priority_score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update_중복": {
+      "main": [
+        [
+          {
+            "node": "Get_insight_type_id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row2": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "get_subreddit_list",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items3": {
+      "main": [
+        [
+          {
+            "node": "LLM용 DATA필터링1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get many comments in a post1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Split Out2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reddit api2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "감정분석 및 논점분석DATA1": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Update a row": {
+      "main": [
+        [
+          {
+            "node": "TBS_2?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update_TBS_List_Table": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TBS_2?": {
+      "main": [
+        [
+          {
+            "node": "Update_TBS_List_Table",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "브랜드인사이트분석1": {
+      "main": [
+        [
+          {
+            "node": "브랜드인사이트DATA1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "감정분석 및 논점분석1": {
+      "main": [
+        [
+          {
+            "node": "감정분석 및 논점분석DATA1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "브랜드인사이트DATA1": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "Get_product_insight_weights",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get_product_insight_weights": {
+      "main": [
+        [
+          {
+            "node": "weight",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "브랜드인사이트분석1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "감정분석 및 논점분석1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "weight": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge4": {
+      "main": [
+        [
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Delete a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "8e2c18ed-63e2-4d21-b163-65317acc3455",
+  "meta": {
+    "instanceId": "43b792fd87d3475e71b7dacfd6d8efa5df9e54b8f80a535c972bf1dbfc0199bb"
+  },
+  "id": "W3e906hcDYWS4At6",
+  "tags": [
+    {
+      "updatedAt": "2026-01-26T10:34:54.036Z",
+      "createdAt": "2026-01-26T10:34:54.036Z",
+      "id": "YvdN8mZEfL2tiWwl",
+      "name": "Full Scope"
+    }
+  ]
+}
