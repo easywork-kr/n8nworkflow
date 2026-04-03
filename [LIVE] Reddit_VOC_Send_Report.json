@@ -1,0 +1,980 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        176,
+        -1216
+      ],
+      "id": "54c9aea1-66f5-40ae-b1dc-5ee87c08fe14",
+      "name": "Webhook",
+      "webhookId": "cd3b450b-2c9e-4fe0-b6a5-51f3353c908e"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2880,
+        -1824
+      ],
+      "id": "95f3737e-58a8-4da1-8d75-af13ee33ad9a",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "html": "<!DOCTYPE html>\n<html lang=\"ko\">\n<head>\n  <meta charset=\"utf-8\" />\n  <title>Reddit Listening Report</title>\n</head>\n\n<body style=\"margin:0;padding:0;background:#f6f7f9;\">\n  <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\"\n         style=\"border-collapse:collapse;background:#f6f7f9;\">\n    <tr>\n      <td align=\"center\" style=\"padding:24px;\">\n\n        <!-- Outer container -->\n        <table role=\"presentation\" width=\"860\" cellpadding=\"0\" cellspacing=\"0\"\n               style=\"border-collapse:collapse;background:#ffffff;border:1px solid #e5e7eb;\">\n          <tr>\n            <td style=\"padding:28px 32px;\">\n\n              <!-- ✅ Header -->\n              <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;\">\n                <tr>\n                  <td style=\"font-family:system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR,sans-serif;\n                             font-size:12px;line-height:1.6;font-weight:800;color:#111827;\">\n                    Gemini 2.5 pro 버전으로 추출한 {{ $now.setZone('Asia/Seoul').toFormat('M/d') }}일자 레딧 내 핫 포스트 데일리 리스닝입니다.\n                  </td>\n                </tr>\n              </table>\n\n              <!-- spacer 24 -->\n              <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;\">\n                <tr><td height=\"24\" style=\"height:24px;line-height:24px;font-size:0;\">&nbsp;</td></tr>\n              </table>\n\n              <!-- divider line -->\n              <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;\">\n                <tr><td style=\"border-top:1px solid #e5e7eb;line-height:0;font-size:0;\">&nbsp;</td></tr>\n              </table>\n\n              <!-- spacer 24 -->\n              <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;\">\n                <tr><td height=\"24\" style=\"height:24px;line-height:24px;font-size:0;\">&nbsp;</td></tr>\n              </table>\n\n              {{ $json.mainHtml }}\n\n              <!-- spacer 24 -->\n              <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;\">\n                <tr><td height=\"24\" style=\"height:24px;line-height:24px;font-size:0;\">&nbsp;</td></tr>\n              </table>\n\n              <!-- divider line -->\n              <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;\">\n                <tr><td style=\"border-top:1px solid #e5e7eb;line-height:0;font-size:0;\">&nbsp;</td></tr>\n              </table>\n\n              <!-- spacer 24 -->\n              <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;\">\n                <tr><td height=\"24\" style=\"height:24px;line-height:24px;font-size:0;\">&nbsp;</td></tr>\n              </table>\n\n            </td>\n          </tr>\n        </table>\n\n      </td>\n    </tr>\n  </table>\n</body>\n</html>\n"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1504,
+        -1392
+      ],
+      "id": "c114e97e-49de-4386-af8b-0f9e4f68f080",
+      "name": "HTML1"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "sendTo": "={{ ($json.recipient_emails || []).join(', ') }}",
+        "subject": "={{ $('Edit Fields5').item.json.subject }}",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "ccList": "={{ ($json.cc_emails || []).join(', ') }}",
+          "senderName": "={{ $json.sender_name }}",
+          "replyTo": "={{ $json.reply_to_email }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2336,
+        -1760
+      ],
+      "id": "0d06d98f-c1c7-4b43-91aa-556303c8c976",
+      "name": "Send a message",
+      "webhookId": "88d8f3f3-1968-43cb-a4cf-a0c3e62816ed",
+      "retryOnFail": false,
+      "executeOnce": true,
+      "credentials": {
+        "googleApi": {
+          "id": "2aAQJLZwLDNkzl88",
+          "name": "Gmail_easywork.kr@gmail.com"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "reports",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        832,
+        -1216
+      ],
+      "id": "b15699c8-fa4e-4ef1-b912-579848b0982e",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2640,
+        -1616
+      ],
+      "id": "4345474c-a0d2-42bb-8cc2-120094c70fc0",
+      "name": "error_"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "categories",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $('Edit Fields5').item.json.categoryId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -1568
+      ],
+      "id": "895da820-0290-4fc8-856e-6dbd90a6e6af",
+      "name": "Get_categoryname"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "category_email_settings",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "category_id",
+              "keyValue": "={{ $('Edit Fields5').item.json.categoryId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        -1568
+      ],
+      "id": "66bd2de6-f79e-4159-94cb-f53c043ad079",
+      "name": "Get_email_adm"
+    },
+    {
+      "parameters": {
+        "tableId": "email_logs",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "category_id",
+              "fieldValue": "={{ $('Merge1').item.json.category_id }}"
+            },
+            {
+              "fieldId": "sent_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            },
+            {
+              "fieldId": "subject",
+              "fieldValue": "={{ $('Edit Fields5').item.json.subject }}"
+            },
+            {
+              "fieldId": "sender_name",
+              "fieldValue": "={{ $('Get_email_adm').item.json.sender_name }}"
+            },
+            {
+              "fieldId": "recipients",
+              "fieldValue": "={{ $('Get_email_adm').item.json.recipient_emails }}"
+            },
+            {
+              "fieldId": "cc_list",
+              "fieldValue": "={{ $('Get_email_adm').item.json.cc_emails }}"
+            },
+            {
+              "fieldId": "content_html",
+              "fieldValue": "={{ $('HTML1').item.json.html }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        -1824
+      ],
+      "id": "a18c16c6-eaa0-413f-8ae8-cc4cc84aaf7c",
+      "name": "Create_email_logs"
+    },
+    {
+      "parameters": {
+        "jsCode": "/************************************************************\n * [Function #2] Main Block 생성 (멀티 아이템 지원) - EMAIL SAFE (Outlook Classic 최적화 / 가독성 강화)\n * - ONLY uses nodes: \"Get a Voc Post\", \"Get a row\"\n *\n * ✅ 가독성 개선:\n *  - 폰트: Malgun Gothic + Segoe UI 폴백\n *  - 제목 18/26, 메타 13/20, 본문 15/24, 섹션 14/22\n * ✅ Outlook Classic 안정화:\n *  - ul/li 제거 → 테이블 불릿\n *  - div 최소화\n *  - line-height px 고정 + mso-line-height-rule:exactly\n *  - 버튼은 Outlook에서 라운드 보강하려면 outer HTML에 xmlns:v 네임스페이스가 필요할 수 있음\n ************************************************************/\n\n// ✅ 폰트 스택 (Outlook Classic/회사PC 환경 최적)\nconst FONT_STACK = `'Malgun Gothic','Segoe UI',Arial,'Apple SD Gothic Neo','Noto Sans KR',sans-serif`;\n\n// ✅ 타이포 스케일(가독성)\nconst SIZE_TITLE = 16, LH_TITLE = 25;\nconst SIZE_META  = 12, LH_META  = 19;\nconst SIZE_BODY  = 13, LH_BODY  = 23;\nconst SIZE_SEC   = 13, LH_SEC   = 21;\n\n// ✅ 이미지 높이 고정\nconst IMAGE_H = 230;\n\n// ✅ 포스트 목록: Get a Voc Post\nconst vocIncoming = $(\"Get a Voc Post\").all();\n\n// ✅ \"배열 1개 아이템\"으로 들어오는 경우까지 평탄화\nconst items = [];\nfor (const it of vocIncoming) {\n  const v = it?.json;\n  if (Array.isArray(v)) {\n    for (const row of v) items.push({ json: row });\n  } else {\n    items.push(it);\n  }\n}\n\n// ✅ 제품 정보: Get a row (보통 1개)\nconst prodIncoming = $items(\"Get a row\") || [];\nlet productRow = prodIncoming[0]?.json ?? {};\nif (Array.isArray(productRow)) productRow = productRow[0] ?? {};\nconst productName = String(productRow?.name ?? \"제품군\").trim() || \"제품군\";\n\n/***********************\n * HTML escape (XSS/깨짐 방지)\n ***********************/\nconst esc = (s) => String(s ?? \"\")\n  .replace(/&/g, \"&amp;\")\n  .replace(/</g, \"&lt;\")\n  .replace(/>/g, \"&gt;\")\n  .replace(/\"/g, \"&quot;\")\n  .replace(/'/g, \"&#39;\");\n\n/***********************\n * 개행 정규화\n ***********************/\nconst normalizeForSplit = (s) => String(s ?? \"\")\n  .replace(/\\\\r\\\\n/g, \"\\n\")\n  .replace(/\\\\n/g, \"\\n\")\n  .replace(/<br\\s*\\/?>/gi, \"\\n\");\n\n/***********************\n * 허용 태그만 살리는 escape\n * - <b>, <strong>, <br/> 만 복원\n ***********************/\nconst escAllowBasicTags = (s) => {\n  const src = String(s ?? \"\");\n  const tokens = [];\n  const withTokens = src.replace(/<\\/?\\s*(b|strong)\\s*>|<br\\s*\\/?>/gi, (m) => {\n    const key = `@@TAG_${tokens.length}@@`;\n    const mm = m.toLowerCase().replace(/\\s+/g, \"\");\n\n    let repl = m;\n    if (mm.startsWith(\"<br\")) repl = \"<br/>\";\n    else if (mm === \"<b>\") repl = \"<b>\";\n    else if (mm === \"</b>\") repl = \"</b>\";\n    else if (mm === \"<strong>\") repl = \"<strong>\";\n    else if (mm === \"</strong>\") repl = \"</strong>\";\n\n    tokens.push([key, repl]);\n    return key;\n  });\n\n  let out = esc(withTokens);\n  for (const [k, v] of tokens) out = out.split(k).join(v);\n  return out;\n};\n\n/***********************\n * summary 렌더 (볼드/개행 유지)\n ***********************/\nconst renderSummaryHtml = (text) => {\n  const t = normalizeForSplit(text);\n  return escAllowBasicTags(t).replace(/\\n/g, \"<br/>\");\n};\n\n/***********************\n * 안전한 JSON 파서\n ***********************/\nconst safeJsonParse = (v, fallback) => {\n  if (v === null || v === undefined) return fallback;\n  if (typeof v === \"object\") return v;\n  const s = String(v).trim();\n  if (!s) return fallback;\n  try { return JSON.parse(s); } catch { return fallback; }\n};\n\n/***********************\n * {\"Positive\":82,\"Negative\":8,\"Neutral\":10} -> \"긍정 82%, 부정 8%, 중립 10%\"\n ***********************/\nconst formatDistribution = (distObj) => {\n  if (!distObj || typeof distObj !== \"object\") return \"\";\n\n  const pos = distObj.Positive ?? distObj.positive ?? \"\";\n  const neg = distObj.Negative ?? distObj.negative ?? \"\";\n  const neu = distObj.Neutral ?? distObj.neutral ?? \"\";\n\n  const parts = [];\n  if (pos !== \"\") parts.push(`긍정 ${pos}%`);\n  if (neg !== \"\") parts.push(`부정 ${neg}%`);\n  if (neu !== \"\") parts.push(`중립 ${neu}%`);\n  return parts.join(\", \");\n};\n\n/***********************\n * comment_summary bullet 정규화\n ***********************/\nconst normalizeCommentSummary = (s) => {\n  const t = normalizeForSplit(s).trim();\n  if (!t) return \"\";\n\n  // 이미 불릿(-)로 시작해도, 내부에 (긍정/중립/부정)이 있으면 분리 처리\n  if (t.includes(\"(긍정)\") || t.includes(\"(중립)\") || t.includes(\"(부정)\")) {\n    const base = t\n      // 이미 맨 앞이 \"- (긍정)\" 같은 경우라도, 뒤에 나오는 감정 태그들 앞에 줄바꿈+불릿 추가\n      .replace(/\\s*\\(긍정\\)\\s*/g, \"\\n- (긍정) \")\n      .replace(/\\s*\\(중립\\)\\s*/g, \"\\n- (중립) \")\n      .replace(/\\s*\\(부정\\)\\s*/g, \"\\n- (부정) \")\n      // 맨 앞에 불필요하게 \"\\n- \"가 붙는 경우 정리\n      .replace(/^\\s*\\n-\\s*/, \"- \")\n      .trim();\n\n    // base가 '-'로 시작 안 하면 한 번만 붙여주기\n    return base.startsWith(\"-\") ? base : `- ${base}`;\n  }\n\n  // 감정 태그 없으면 기존 규칙 유지\n  if (t.startsWith(\"-\")) return t;\n  return `- ${t}`;\n};\n\n\n/***********************\n * pill(배지) 스타일 (EMAIL SAFE: inline)\n * - Outlook Classic에서 border-radius는 무시될 수 있음\n ***********************/\nconst pill = (bg, color, border) =>\n  `display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;line-height:16px;` +\n  `background:${bg};color:${color};border:1px solid ${border};margin-right:6px;`;\n\nconst pillBlue = pill(\"#eef2ff\", \"#3b5bcc\", \"#dbe2ff\");\nconst pillNeu  = pill(\"#f3f4f6\", \"#6b7280\", \"#e5e7eb\");\nconst pillMeta = pill(\"#f3f4f6\", \"#374151\", \"#e5e7eb\");\n\nconst pillBySentiment = (s) => {\n  const v = String(s ?? \"\").toLowerCase();\n  if (v.includes(\"pos\") || v.includes(\"긍정\")) return pill(\"#dff5df\", \"#1f7a3b\", \"#b7e4bf\");\n  if (v.includes(\"neg\") || v.includes(\"부정\")) return pill(\"#fde8ea\", \"#d1242f\", \"#f6c9cf\");\n  if (v.includes(\"neu\") || v.includes(\"중립\")) return pill(\"#f3f4f6\", \"#6b7280\", \"#e5e7eb\");\n  return pillNeu;\n};\n\nconst insightPillStyle = (type) => {\n  const t = String(type ?? \"\").trim().toLowerCase().replace(/\\s+/g, \" \");\n\n  if (t === \"review/setup\" || t === \"review\" || t === \"setup\")\n    return pill(\"#dff5df\", \"#1f7a3b\", \"#b7e4bf\");\n  if (t === \"troubleshooting\")\n    return pill(\"#dbeeff\", \"#1d65c9\", \"#b7d8ff\");\n  if (t === \"comparison\")\n    return pill(\"#eadcff\", \"#6b35c9\", \"#d7c2ff\");\n  if (t === \"support\")\n    return pill(\"#ededed\", \"#444444\", \"#d9d9d9\");\n  if (t === \"question/information\" || t === \"question\" || t === \"information\")\n    return pill(\"#d7f0f3\", \"#0f6b78\", \"#b9e3ea\");\n  if (t === \"buying advice\")\n    return pill(\"#ffe7a3\", \"#6a4a00\", \"#ffd67a\");\n  if (t === \"news\")\n    return pill(\"#0f3b44\", \"#ffffff\", \"#0f3b44\");\n\n  // ✅ 새로 추가된 2개\n  if (t === \"cmr review\" || t === \"cmr\"|| t === \"cmrreview\")\n    return pill(\"#f3e8ff\", \"#6b21a8\", \"#e9d5ff\");\n  if (t === \"trial program/giveaway/event\" || t === \"trial program\" || t === \"giveaway\" || t === \"event\")\n    return pill(\"#ffedd5\", \"#9a3412\", \"#fed7aa\");\n\n  if (t === \"promotion\")\n    return pill(\"#8b4a12\", \"#ffffff\", \"#8b4a12\");\n  if (t === \"others\" || t === \"other\")\n    return pill(\"#b91c1c\", \"#ffffff\", \"#b91c1c\");\n\n  if (t === \"critical issue\" || t === \"critical\" || t === \"criticalissue\")\n  return pill(\"#fee2e2\", \"#991b1b\", \"#fecaca\"); \n  if (t === \"Discussion\")\n  return pill(\"#dbeafe\", \"#1e40af\", \"#bfdbfe\");\n\n  return pillBlue;\n};\n\n/***********************\n * (긍정)/(중립)/(부정) 텍스트 색상\n ***********************/\nconst labelSpan = (label) => {\n  if (label === \"긍정\") return `<span style=\"color:#1a7f37;font-weight:700;\">(긍정)</span>`;\n  if (label === \"중립\") return `<span style=\"color:#6b7280;font-weight:700;\">(중립)</span>`;\n  if (label === \"부정\") return `<span style=\"color:#d1242f;font-weight:700;\">(부정)</span>`;\n  return `<span>(${esc(label)})</span>`;\n};\n\n/***********************\n * ✅ 분포 텍스트 컬러링 (comment summary와 동일 색상, Bold 없음)\n * 예: \"긍정 10%, 부정 20%, 중립 70%\"\n ***********************/\nconst colorizeDistributionText = (s) => {\n  let out = esc(String(s ?? \"\"));\n\n  const POS = \"#1a7f37\";\n  const NEU = \"#6b7280\";\n  const NEG = \"#d1242f\";\n\n  // 한글\n  out = out.replace(/(긍정\\s*\\d+(?:\\.\\d+)?%?)/g, `<span style=\"color:${POS};\">$1</span>`);\n  out = out.replace(/(중립\\s*\\d+(?:\\.\\d+)?%?)/g, `<span style=\"color:${NEU};\">$1</span>`);\n  out = out.replace(/(부정\\s*\\d+(?:\\.\\d+)?%?)/g, `<span style=\"color:${NEG};\">$1</span>`);\n\n  // 영문(혹시 들어올 때 대비)\n  out = out.replace(/(positive\\s*\\d+(?:\\.\\d+)?%?)/gi, `<span style=\"color:${POS};\">$1</span>`);\n  out = out.replace(/(neutral\\s*\\d+(?:\\.\\d+)?%?)/gi, `<span style=\"color:${NEU};\">$1</span>`);\n  out = out.replace(/(negative\\s*\\d+(?:\\.\\d+)?%?)/gi, `<span style=\"color:${NEG};\">$1</span>`);\n\n  return out;\n};\n\n/***********************\n * ✅ Outlook-safe bullets (ul/li 대신 table bullets)\n ***********************/\nconst bulletsTableHtml = (text) => {\n  const t = normalizeCommentSummary(text);\n  if (!t) return \"\";\n\n  const lines = t.split(/\\r?\\n/).map(x => x.trim()).filter(Boolean);\n\n  const rows = lines.map(line => {\n    const raw = line.replace(/^[•\\-\\*]\\s*/, \"\");\n    let s = escAllowBasicTags(raw);\n    s = s.replace(/\\(긍정\\)/g, labelSpan(\"긍정\"));\n    s = s.replace(/\\(중립\\)/g, labelSpan(\"중립\"));\n    s = s.replace(/\\(부정\\)/g, labelSpan(\"부정\"));\n\n    return `\n      <tr>\n        <td width=\"18\" valign=\"top\"\n            style=\"width:18px;font-size:${SIZE_BODY}px;line-height:${LH_BODY}px;mso-line-height-rule:exactly;color:#111827;\">•</td>\n        <td valign=\"top\"\n            style=\"font-size:${SIZE_BODY}px;line-height:${LH_BODY}px;mso-line-height-rule:exactly;color:#111827;padding:0 0 6px 0;\">\n          ${s}\n        </td>\n      </tr>\n    `;\n  }).join(\"\");\n\n  return `\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;\">\n      ${rows}\n    </table>\n  `;\n};\n\n// ✅ insight_type_id -> 라벨\nconst insightTypeMap = {\n  1: \"Review/Setup\",\n  2: \"Troubleshooting\",\n  3: \"Comparison\",\n  4: \"Support\",\n  5: \"Buying Advice\",\n  6: \"Question/Information\",\n  7: \"News\",\n  8: \"CMR Review\",\n  9: \"Promotion\",\n  10: \"Trial Program/Giveaway/Event\",\n  11: \"Others\",\n  16: \"Critical Issue\",\n  17: \"Discussion\"\n};\n\nconst webhookBody = $(\"Webhook\").first()?.json?.body ?? {};\nconst reports = Array.isArray(webhookBody.reports) ? webhookBody.reports : [];\n\nconst showImageById = new Map(\n  reports\n    .filter(r => r && r.uuid)\n    .map(r => [String(r.uuid), r.showImage])\n);\n\n/************************************************************\n * 카드 생성\n ************************************************************/\nreturn items.map((it) => {\n  const row = it.json ?? {};\n\n  const subreddit = row.subreddit ?? \"\";\n  const postUrl = row.post_link ?? \"\";\n  const title = row.title ?? \"(제목 없음)\";\n\n  const upvotes = row.upvote_count ?? \"\";\n  const commentsCount = row.comment_count ?? \"\";\n\n  const insightType =\n    row.insight_type ??\n    insightTypeMap[row.insight_type_id] ??\n    (row.insight_type_id ? `Insight #${row.insight_type_id}` : \"\");\n\n  const overall = row.sentiment_type ?? \"\";\n\n  const distObj = safeJsonParse(row.sentiment_score_distribution, null);\n  const distText = formatDistribution(distObj) || String(row.sentiment_score_distribution ?? \"\");\n\n  const summary = row.summary_main ?? \"\";\n  const commentSentiment = row.comment_sentiment_type ?? \"혼합\";\n  const commentSummary = row.comment_summary ?? \"\";\n\n  // ✅ 이미지 URL (null/없으면 자동 미표시)\n  const imageUrl = Array.isArray(row.image_urls)\n    ? (row.image_urls[0] ?? \"\")\n    : String(row.image_urls ?? \"\").split(/\\r?\\n/)[0]?.trim();\n\n  // ✅ showImage (Webhook 우선 → 없으면 row.showImage → 없으면 true)\n  const id = String(row.id ?? \"\");\n  const showImageRaw =\n    (id && showImageById.has(id)) ? showImageById.get(id) : row.showImage;\n\n  const showImage = (showImageRaw === undefined || showImageRaw === null)\n    ? true\n    : (showImageRaw === true || String(showImageRaw).toLowerCase() === \"true\");\n\n  const mainBlock = `\n<!-- mainBlock (email-safe, Outlook Classic optimized + readability) -->\n<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin:0 0 14px 0;\">\n  <tr>\n    <td style=\"border:1px solid #e5e7eb;padding:18px;background:#ffffff;\n               font-family:${FONT_STACK};font-size:${SIZE_BODY}px;line-height:${LH_BODY}px;mso-line-height-rule:exactly;color:#111827;\">\n      <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;\">\n\n        <!-- Title + Button -->\n        <tr>\n          <td style=\"padding:0 0 8px 0;\">\n            <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;\">\n              <tr>\n                <td style=\"font-size:${SIZE_TITLE}px;font-weight:800;line-height:${LH_TITLE}px;mso-line-height-rule:exactly;color:#111827;\">\n                  <a href=\"${esc(postUrl)}\" target=\"_blank\" style=\"color:#111827;text-decoration:none;\">\n                    ${esc(title)}\n                  </a>\n                </td>\n\n                <td align=\"right\" valign=\"middle\" style=\"padding-left:12px;white-space:nowrap;\">\n                  <a href=\"${esc(postUrl)}\" target=\"_blank\"\n                    style=\"display:inline-block;padding:8px 13px;background:#DC727A;color:#ffffff;\n                           text-decoration:none;font-size:13px;font-weight:700;line-height:14px;border-radius:8px;\">\n                    원문 보기 →\n                  </a>\n                </td>\n              </tr>\n            </table>\n          </td>\n        </tr>\n\n        <!-- Meta (pills로 스캔성 강화) -->\n        <tr>\n          <td style=\"font-size:12px;line-height:1.6;color:#6b7280;padding:0 0 10px 0;\">\n          <span style=\"${pillBlue}\">${esc(productName)}</span>\n            ${subreddit ? `r/${esc(subreddit)}&nbsp;&nbsp;` : \"\"}\n            ${upvotes !== \"\" ? `${esc(upvotes)} upvotes&nbsp;&nbsp;` : \"\"}\n            ${commentsCount !== \"\" ? `${esc(commentsCount)} comments` : \"\"}\n          </td>\n        </tr>\n\n        <!-- Insight / Sentiment -->\n        <tr>\n          <td style=\"padding:0 0 10px 0;\">\n            ${insightType ? `<span style=\"${insightPillStyle(insightType)}\">${esc(insightType)}</span>` : \"\"}\n            ${overall ? `<span style=\"${pillBySentiment(overall)}\">${esc(overall)}</span>` : \"\"}\n          </td>\n        </tr>\n\n        <!-- Image (Outlook Classic: object-fit 미지원 → height 고정 + width:auto) -->\n        ${(imageUrl && showImage) ? `\n        <tr>\n          <td style=\"padding:12px 0 0 0;\">\n            <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;\">\n              <tr>\n                <td align=\"left\" valign=\"middle\" height=\"${IMAGE_H}\"\n                    style=\"height:${IMAGE_H}px;line-height:0;font-size:0;padding:0;background:#ffffff;\">\n                  <img src=\"${esc(imageUrl)}\" alt=\"\" height=\"${IMAGE_H}\"\n                       style=\"display:block;height:${IMAGE_H}px;max-height:${IMAGE_H}px;width:auto;max-width:100%;\n                              border:0;outline:none;text-decoration:none;margin:0;\" />\n                </td>\n              </tr>\n            </table>\n          </td>\n        </tr>\n        ` : \"\"}\n\n        <!-- Summary -->\n        ${summary ? `\n        <tr>\n          <td style=\"padding:12px 0 0 0;\">\n            <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;\">\n              <tr>\n                <td style=\"background:#ffffff;border:1px solid #eef0f3;padding:14px;\n                           font-size:${SIZE_BODY}px;line-height:${LH_BODY}px;mso-line-height-rule:exactly;color:#111827;\">\n                  ${renderSummaryHtml(summary)}\n                </td>\n              </tr>\n            </table>\n          </td>\n        </tr>` : \"\"}\n\n        <!-- Comment reaction -->\n        <tr>\n          <td style=\"padding:14px 0 0 0;\">\n\n            <p style=\"margin:0 0 8px 0;font-size:${SIZE_SEC}px;font-weight:800;line-height:${LH_SEC}px;mso-line-height-rule:exactly;color:#111827;\">\n              주요 댓글 반응\n            </p>\n\n            <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;margin:0 0 8px 0;\">\n              <tr>\n                <td style=\"font-size:${SIZE_META}px;line-height:${LH_META}px;mso-line-height-rule:exactly;color:#6b7280;\">\n                  <span style=\"${pillBySentiment(commentSentiment)}\">${esc(commentSentiment)}</span>\n                  <span>${colorizeDistributionText(distText)}</span>\n                </td>\n              </tr>\n            </table>\n\n            ${bulletsTableHtml(commentSummary)}\n          </td>\n        </tr>\n\n      </table>\n    </td>\n  </tr>\n</table>\n`;\n\n  return { json: { ...row, mainBlock } };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1536,
+        -1200
+      ],
+      "id": "f16a06fc-019d-4892-89cd-d955b6ea2b83",
+      "name": "mainBlock"
+    },
+    {
+      "parameters": {
+        "jsCode": "/************************************************************\n * [Function #2.5] Main Blocks 합치기 (EMAIL SAFE)\n * - 입력: 여러 items (각 item.json.mainBlock 존재)\n * - 출력: { mainHtml } 단일 아이템\n ************************************************************/\nconst items = $input.all();\n\nconst mainHtml = items\n  .map(it => String(it.json?.mainBlock ?? \"\").trim())\n  .filter(Boolean)\n  .join(\"\\n\");\n\nreturn [{ json: { mainHtml } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        -1392
+      ],
+      "id": "82c34aca-047f-4d14-b61a-f85c2b46a7a2",
+      "name": "agregateMainBlock"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "products",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.product_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        -1200
+      ],
+      "id": "b2f63305-27fe-4875-9b6a-54befa1f2c4f",
+      "name": "Get a row"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "voc_posts",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.reports[0].uuid }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        960,
+        -1376
+      ],
+      "id": "8e3a8734-0df2-4206-891a-5cdd5680a74c",
+      "name": "Get a row1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "voc_posts",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.uuid }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        -1200
+      ],
+      "id": "03a1884c-04d8-4301-91c6-416114d00c8e",
+      "name": "Get a Voc Post",
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2880,
+        -1424
+      ],
+      "id": "ba8bab3f-1d86-48d8-813c-c9add69c8d8f",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ ($json.recipient_emails || []).join(', ') }}",
+        "subject": "={{ $('Edit Fields5').item.json.subject }}",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "ccList": "={{ ($json.cc_emails || []).join(', ') }}",
+          "senderName": "={{ $json.sender_name }}",
+          "replyTo": "={{ $json.reply_to_email }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2336,
+        -1392
+      ],
+      "id": "c45f5056-2ded-4bbd-86f4-dffd8d4d136c",
+      "name": "Send a message1",
+      "webhookId": "88d8f3f3-1968-43cb-a4cf-a0c3e62816ed",
+      "retryOnFail": false,
+      "executeOnce": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2640,
+        -1216
+      ],
+      "id": "03d6d84c-dbd0-4bcf-97c9-1668168b58fa",
+      "name": "error_1"
+    },
+    {
+      "parameters": {
+        "tableId": "email_logs",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "category_id",
+              "fieldValue": "={{ $('Merge1').item.json.category_id }}"
+            },
+            {
+              "fieldId": "sent_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            },
+            {
+              "fieldId": "subject",
+              "fieldValue": "={{ $('Edit Fields5').item.json.subject }}"
+            },
+            {
+              "fieldId": "sender_name",
+              "fieldValue": "={{ $('Get_email_adm').item.json.sender_name }}"
+            },
+            {
+              "fieldId": "recipients",
+              "fieldValue": "={{ $('Get_email_adm').item.json.recipient_emails }}"
+            },
+            {
+              "fieldId": "cc_list",
+              "fieldValue": "={{ $('Get_email_adm').item.json.cc_emails }}"
+            },
+            {
+              "fieldId": "content_html",
+              "fieldValue": "={{ $('HTML1').item.json.html }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        -1424
+      ],
+      "id": "070bc90e-5bbc-4090-952a-64670e3ca0da",
+      "name": "Create_email_logs1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2880,
+        -976
+      ],
+      "id": "680c3716-7f97-4b2e-86a1-62a53bc5db5d",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ ($json.recipient_emails || []).join(', ') }}",
+        "subject": "={{ $('Edit Fields5').item.json.subject }}",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "ccList": "={{ ($json.cc_emails || []).join(', ') }}",
+          "senderName": "={{ $json.sender_name }}",
+          "replyTo": "={{ $json.reply_to_email }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2336,
+        -912
+      ],
+      "id": "0649f575-266e-4637-b80b-7f0437d4c2a3",
+      "name": "Send a message2",
+      "webhookId": "88d8f3f3-1968-43cb-a4cf-a0c3e62816ed",
+      "retryOnFail": false,
+      "executeOnce": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2640,
+        -768
+      ],
+      "id": "0c4a5cba-c14a-40be-9459-cf4b366bdc4f",
+      "name": "error_2"
+    },
+    {
+      "parameters": {
+        "tableId": "email_logs",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "category_id",
+              "fieldValue": "={{ $('Merge1').item.json.category_id }}"
+            },
+            {
+              "fieldId": "sent_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            },
+            {
+              "fieldId": "subject",
+              "fieldValue": "={{ $('Edit Fields5').item.json.subject }}"
+            },
+            {
+              "fieldId": "sender_name",
+              "fieldValue": "={{ $('Get_email_adm').item.json.sender_name }}"
+            },
+            {
+              "fieldId": "recipients",
+              "fieldValue": "={{ $('Get_email_adm').item.json.recipient_emails }}"
+            },
+            {
+              "fieldId": "cc_list",
+              "fieldValue": "={{ $('Get_email_adm').item.json.cc_emails }}"
+            },
+            {
+              "fieldId": "content_html",
+              "fieldValue": "={{ $('HTML1').item.json.html }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        -976
+      ],
+      "id": "4792d382-c848-4b87-8ead-a5a363a4fb7f",
+      "name": "Create_email_logs2"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.category_id }}",
+                    "rightValue": "d6b05d54-44f9-4dd0-b4fa-6536b0912824",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "d5c26eef-eba0-45ff-8583-0e885846cd8d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "TV"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a05fcbd5-7115-451c-94bb-9157148c0386",
+                    "leftValue": "={{ $json.category_id }}",
+                    "rightValue": "3007b8e6-8be6-4f64-b071-30652faee68c",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "IT"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f26be34c-e269-4ef0-8c11-b613378386a7",
+                    "leftValue": "={{ $json.category_id }}",
+                    "rightValue": "4068caaa-1b6d-4f9f-95ec-1bd38791df05",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "AV"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1968,
+        -1408
+      ],
+      "id": "38c0e494-6219-4cf3-a329-d74833c5bdeb",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "content": "TV\nIT\nAV",
+        "height": 1200
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2256,
+        -1872
+      ],
+      "id": "52d5bca0-2cd9-44c5-bacb-c27d93149751",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1024,
+        -1216
+      ],
+      "id": "1c12bbaf-d45e-43e1-8d7f-6dfb29439367",
+      "name": "Loop Over Items2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1ec0217d-3ea2-4b22-9b89-2bb8dbdcd786",
+              "name": "categoryId",
+              "value": "={{ $json.body.categoryId }}",
+              "type": "string"
+            },
+            {
+              "id": "5ab5531e-8825-4283-b14b-3e9a5c300a80",
+              "name": "reports",
+              "value": "={{ $json.body.reports }}",
+              "type": "array"
+            },
+            {
+              "id": "f3078a11-95a7-46af-be72-a88441abfa86",
+              "name": "subject",
+              "value": "={{ $json.body.subject }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        384,
+        -1216
+      ],
+      "id": "f2077bfb-3691-4f01-bfd2-c47729c1ecac",
+      "name": "Edit Fields5"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1776,
+        -1408
+      ],
+      "id": "789f42d4-e9e6-40d8-974c-2502d90bca8a",
+      "name": "Merge1"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Create_email_logs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "error_",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get_categoryname": {
+      "main": [
+        [
+          {
+            "node": "Get_email_adm",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get_email_adm": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create_email_logs": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mainBlock": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "agregateMainBlock": {
+      "main": [
+        [
+          {
+            "node": "HTML1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "mainBlock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Get a Voc Post": {
+      "main": [
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message1": {
+      "main": [
+        [
+          {
+            "node": "Create_email_logs1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "error_1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create_email_logs1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message2": {
+      "main": [
+        [
+          {
+            "node": "Create_email_logs2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "error_2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create_email_logs2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items2": {
+      "main": [
+        [
+          {
+            "node": "agregateMainBlock",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a Voc Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields5": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get_categoryname",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get a row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "headers": {
+          "connection": "upgrade",
+          "host": "n8n.lguserhub.ai",
+          "x-real-ip": "3.226.255.132",
+          "x-forwarded-for": "3.226.255.132",
+          "x-forwarded-proto": "https",
+          "content-length": "272",
+          "content-type": "application/json",
+          "x-vercel-id": "icn1::rcmw2-1773047918177-ee080def6096",
+          "x-invocation-id": "icn1::rcmw2-1773047918177-ee080def6096",
+          "accept": "*/*",
+          "accept-language": "*",
+          "sec-fetch-mode": "cors",
+          "user-agent": "node",
+          "accept-encoding": "br, gzip, deflate"
+        },
+        "params": {},
+        "query": {},
+        "body": {
+          "categoryId": "d6b05d54-44f9-4dd0-b4fa-6536b0912824",
+          "subject": "[TV Daily VOICE 2026-03-09] G/C6 사전예약 가격정보공유",
+          "reports": [
+            {
+              "uuid": "31df28a7-feb8-4f24-addb-f0b4a5aa7906",
+              "showImage": true
+            },
+            {
+              "uuid": "26f92db4-e2e7-4c43-bce8-1c04c09659b9",
+              "showImage": true
+            }
+          ]
+        },
+        "webhookUrl": "https://n8n.lguserhub.ai/webhook/report/send",
+        "executionMode": "production"
+      }
+    ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5d2f95a6a5971726907c15bcf2d3034c32287ed6bc4f05747c62a6cfa904163e"
+  }
+}
