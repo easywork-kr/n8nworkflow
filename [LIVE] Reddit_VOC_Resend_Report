@@ -1,0 +1,671 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "report/resend",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "1b212b25-a3e4-4224-bf73-e717994a1d04",
+      "name": "Webhook",
+      "webhookId": "b37a9e2b-4fb0-4cea-b5f2-c40cb47bb4be"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "59cec0a8-e890-4154-a3c4-55f19650bf1a",
+              "name": "logUuid",
+              "value": "={{ $json.body.logUuid }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "741c479c-ca47-4fb8-a579-1b5f4655167a",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "email_logs",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.logUuid }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "7edafe00-022d-4ce4-b29b-f0270849b5e7",
+      "name": "Get a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "n1gePNFJ39RxfpxF",
+          "name": "LG_CNS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ ($json.recipients || []).join(', ') }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.content_html }}",
+        "options": {
+          "appendAttribution": false,
+          "ccList": "={{ ($json.cc_list || []).join(', ') }}",
+          "senderName": "={{ $json.sender_name }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        912,
+        -416
+      ],
+      "id": "f4784017-6cdf-4a46-9b18-292490a1927d",
+      "name": "Send a message",
+      "webhookId": "88d8f3f3-1968-43cb-a4cf-a0c3e62816ed",
+      "retryOnFail": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "tcgkoPqRzi0HbP9d",
+          "name": "Gmail_khs-digin.com"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1392,
+        -464
+      ],
+      "id": "8bba768c-7e38-4544-bc76-78acfa7643a6",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1392,
+        -240
+      ],
+      "id": "4388445e-9542-442e-bf50-e27121e7e16a",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "tableId": "email_logs",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "category_id",
+              "fieldValue": "={{ $('Get a row').item.json.category_id }}"
+            },
+            {
+              "fieldId": "sent_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            },
+            {
+              "fieldId": "subject",
+              "fieldValue": "={{ $('Get a row').item.json.subject }}"
+            },
+            {
+              "fieldId": "sender_name",
+              "fieldValue": "={{ $('Get a row').item.json.sender_name }}"
+            },
+            {
+              "fieldId": "recipients",
+              "fieldValue": "={{ $('Get a row').item.json.recipient_emails }}"
+            },
+            {
+              "fieldId": "cc_list",
+              "fieldValue": "={{ $('Get a row').item.json.cc_emails }}"
+            },
+            {
+              "fieldId": "content_html",
+              "fieldValue": "={{ $('Get a row').item.json.content_html }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        -464
+      ],
+      "id": "89875152-7a7f-4d9d-b48a-cdaab1183fec",
+      "name": "Create_email_logs",
+      "credentials": {
+        "supabaseApi": {
+          "id": "n1gePNFJ39RxfpxF",
+          "name": "LG_CNS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.category_id }}",
+                    "rightValue": "d6b05d54-44f9-4dd0-b4fa-6536b0912824",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "d5c26eef-eba0-45ff-8583-0e885846cd8d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "TV"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a05fcbd5-7115-451c-94bb-9157148c0386",
+                    "leftValue": "={{ $json.category_id }}",
+                    "rightValue": "3007b8e6-8be6-4f64-b071-30652faee68c",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "IT"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f26be34c-e269-4ef0-8c11-b613378386a7",
+                    "leftValue": "={{ $json.category_id }}",
+                    "rightValue": "4068caaa-1b6d-4f9f-95ec-1bd38791df05",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "AV"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        608,
+        -16
+      ],
+      "id": "a4215a9a-3bf5-481f-a0cb-e5daf3e038bf",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ ($json.recipients || []).join(', ') }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.content_html }}",
+        "options": {
+          "appendAttribution": false,
+          "ccList": "={{ ($json.cc_list || []).join(', ') }}",
+          "senderName": "={{ $json.sender_name }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        912,
+        0
+      ],
+      "id": "f4322a49-60f3-470a-8ce7-ccdfc76db38e",
+      "name": "Send a message1",
+      "webhookId": "88d8f3f3-1968-43cb-a4cf-a0c3e62816ed",
+      "retryOnFail": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "tcgkoPqRzi0HbP9d",
+          "name": "Gmail_khs-digin.com"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1392,
+        -48
+      ],
+      "id": "446499d3-384e-4cdc-bb1b-ff7da5cef22d",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1392,
+        176
+      ],
+      "id": "29a3bc96-19fb-4df3-9a1f-652fb6c64876",
+      "name": "Respond to Webhook3"
+    },
+    {
+      "parameters": {
+        "tableId": "email_logs",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "category_id",
+              "fieldValue": "={{ $('Get a row').item.json.category_id }}"
+            },
+            {
+              "fieldId": "sent_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            },
+            {
+              "fieldId": "subject",
+              "fieldValue": "={{ $('Get a row').item.json.subject }}"
+            },
+            {
+              "fieldId": "sender_name",
+              "fieldValue": "={{ $('Get a row').item.json.sender_name }}"
+            },
+            {
+              "fieldId": "recipients",
+              "fieldValue": "={{ $('Get a row').item.json.recipient_emails }}"
+            },
+            {
+              "fieldId": "cc_list",
+              "fieldValue": "={{ $('Get a row').item.json.cc_emails }}"
+            },
+            {
+              "fieldId": "content_html",
+              "fieldValue": "={{ $('Get a row').item.json.content_html }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        -48
+      ],
+      "id": "13911bb3-8fb4-4c91-a938-4699c0099891",
+      "name": "Create_email_logs1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "n1gePNFJ39RxfpxF",
+          "name": "LG_CNS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ ($json.recipients || []).join(', ') }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.content_html }}",
+        "options": {
+          "appendAttribution": false,
+          "ccList": "={{ ($json.cc_list || []).join(', ') }}",
+          "senderName": "={{ $json.sender_name }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        912,
+        416
+      ],
+      "id": "81a0699a-1304-46d1-b844-e80d392a9f34",
+      "name": "Send a message2",
+      "webhookId": "88d8f3f3-1968-43cb-a4cf-a0c3e62816ed",
+      "retryOnFail": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "tcgkoPqRzi0HbP9d",
+          "name": "Gmail_khs-digin.com"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1392,
+        368
+      ],
+      "id": "31091e6f-dbd3-4136-abf9-0dab8018eb83",
+      "name": "Respond to Webhook4"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1392,
+        592
+      ],
+      "id": "65943c39-2ba2-4152-88f9-906f88687731",
+      "name": "Respond to Webhook5"
+    },
+    {
+      "parameters": {
+        "tableId": "email_logs",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "category_id",
+              "fieldValue": "={{ $('Get a row').item.json.category_id }}"
+            },
+            {
+              "fieldId": "sent_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            },
+            {
+              "fieldId": "subject",
+              "fieldValue": "={{ $('Get a row').item.json.subject }}"
+            },
+            {
+              "fieldId": "sender_name",
+              "fieldValue": "={{ $('Get a row').item.json.sender_name }}"
+            },
+            {
+              "fieldId": "recipients",
+              "fieldValue": "={{ $('Get a row').item.json.recipient_emails }}"
+            },
+            {
+              "fieldId": "cc_list",
+              "fieldValue": "={{ $('Get a row').item.json.cc_emails }}"
+            },
+            {
+              "fieldId": "content_html",
+              "fieldValue": "={{ $('Get a row').item.json.content_html }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        368
+      ],
+      "id": "1550bcfc-fc26-4f62-8c7b-9953044f40c5",
+      "name": "Create_email_logs2",
+      "credentials": {
+        "supabaseApi": {
+          "id": "n1gePNFJ39RxfpxF",
+          "name": "LG_CNS"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Create_email_logs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create_email_logs": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message1": {
+      "main": [
+        [
+          {
+            "node": "Create_email_logs1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create_email_logs1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message2": {
+      "main": [
+        [
+          {
+            "node": "Create_email_logs2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create_email_logs2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "headers": {
+          "connection": "upgrade",
+          "host": "n8n.lguserhub.ai",
+          "x-real-ip": "44.220.191.137",
+          "x-forwarded-for": "44.220.191.137",
+          "x-forwarded-proto": "https",
+          "content-length": "50",
+          "content-type": "application/json",
+          "x-vercel-id": "icn1::45w25-1773050872916-df2c91f3a423",
+          "x-invocation-id": "icn1::45w25-1773050872916-df2c91f3a423",
+          "accept": "*/*",
+          "accept-language": "*",
+          "sec-fetch-mode": "cors",
+          "user-agent": "node",
+          "accept-encoding": "br, gzip, deflate"
+        },
+        "params": {},
+        "query": {},
+        "body": {
+          "logUuid": "3c0a60e2-b2d8-4cb8-bf7c-8954e707f2cb"
+        },
+        "webhookUrl": "https://n8n.lguserhub.ai/webhook/report/resend",
+        "executionMode": "production"
+      }
+    ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "43b792fd87d3475e71b7dacfd6d8efa5df9e54b8f80a535c972bf1dbfc0199bb"
+  }
+}
